@@ -6,6 +6,9 @@ Main FastAPI application for NAM Agentic Procurement Platform.
 import json
 import logging
 from contextlib import asynccontextmanager
+from dotenv import load_dotenv
+
+load_dotenv()
 
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
