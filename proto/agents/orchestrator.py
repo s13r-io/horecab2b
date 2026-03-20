@@ -15,7 +15,12 @@ from agents.forecasting import forecast_all_ingredients, forecast_ingredient
 from agents.routing import route_ingredient, route_order
 from agents.dispatcher import dispatch_order
 from utils.helpers import generate_order_id, audit_log
-from utils.data_loader import get_demo_config
+from utils.data_loader import (
+    get_demo_config, get_all_ingredients, get_all_recipes,
+    get_current_inventory, get_recipes_using_ingredient
+)
+from pathlib import Path
+
 
 
 _client = Anthropic()
@@ -275,6 +280,54 @@ def _handle_price_check(intent, restaurant_id: str) -> ChatResponse:
     )
 
 
+def _build_general_query_system_prompt() -> str:
+    """Build a context-rich system prompt with restaurant data."""
+    # Load restaurant profile
+    data_dir = Path(__file__).parent.parent / "data"
+    try:
+        with open(data_dir / "restaurant_profile.json") as f:
+            profile = json.load(f)
+    except Exception:
+        profile = {}
+
+    # Build inventory summary
+    ingredients = get_all_ingredients()
+    inventory_lines = []
+    for ing in ingredients:
+        qty = get_current_inventory(ing["sku"])
+        inventory_lines.append(f"  - {ing['name']} ({ing['sku']}): {qty} {ing['unit']} on hand")
+    inventory_text = "\n".join(inventory_lines)
+
+    # Build menu summary
+    recipes = get_all_recipes()
+    menu_lines = []
+    for r in recipes:
+        ing_names = ", ".join(i["sku"] for i in r["ingredients"])
+        menu_lines.append(f"  - {r['dish_name']}: uses {ing_names}")
+    menu_text = "\n".join(menu_lines)
+
+    return f"""You are the procurement assistant for {profile.get('name', 'this restaurant')}, a {profile.get('cuisine', '')} restaurant in {profile.get('location', '')}.
+You serve ~{profile.get('avg_daily_covers', 100)} covers/day.
+
+IMPORTANT: You must ONLY answer questions related to this restaurant's procurement, inventory, menu, and ingredients. If a question is outside this domain, politely redirect the user to ask about procurement topics.
+
+When the user asks about an ingredient, ALWAYS check the inventory and menu data below to give a specific, data-driven answer.
+
+Current Inventory:
+{inventory_text}
+
+Menu (dishes and their ingredients):
+{menu_text}
+
+When asked "do I need X?" or similar:
+1. Check if X is in the inventory above
+2. Check which dishes use X
+3. Compare stock on hand vs expected daily usage
+4. Give a concrete answer based on the data
+
+Keep responses concise and specific to this restaurant's data."""
+
+
 def _handle_general_query(message: str, restaurant_id: str) -> ChatResponse:
     """Handle general query using Claude API with per-restaurant chat history."""
     if restaurant_id not in _chat_histories:
@@ -287,7 +340,7 @@ def _handle_general_query(message: str, restaurant_id: str) -> ChatResponse:
         response = _client.messages.create(
             model="claude-sonnet-4-20250514",
             max_tokens=300,
-            system="You are a helpful procurement assistant for a restaurant. Keep responses concise.",
+            system=_build_general_query_system_prompt(),
             messages=history
         )
 
