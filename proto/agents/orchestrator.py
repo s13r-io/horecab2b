@@ -10,7 +10,7 @@ from datetime import datetime
 from anthropic import Anthropic
 
 from models.schemas import ChatResponse, ApproveResponse, ForecastResponse, VendorMessage
-from agents.perception import parse_intent, get_conversation_history
+from agents.perception import parse_intent
 from agents.forecasting import forecast_all_ingredients, forecast_ingredient
 from agents.routing import route_ingredient, route_order
 from agents.dispatcher import dispatch_order
@@ -19,6 +19,7 @@ from utils.data_loader import get_demo_config
 
 
 _client = Anthropic()
+_chat_histories: dict[str, list[dict]] = {}
 
 
 def handle_message(message: str, restaurant_id: str) -> ChatResponse:
@@ -275,8 +276,12 @@ def _handle_price_check(intent, restaurant_id: str) -> ChatResponse:
 
 
 def _handle_general_query(message: str, restaurant_id: str) -> ChatResponse:
-    """Handle general query using Claude API."""
-    history = get_conversation_history(restaurant_id)
+    """Handle general query using Claude API with per-restaurant chat history."""
+    if restaurant_id not in _chat_histories:
+        _chat_histories[restaurant_id] = []
+
+    history = _chat_histories[restaurant_id]
+    history.append({"role": "user", "content": message})
 
     try:
         response = _client.messages.create(
@@ -287,9 +292,12 @@ def _handle_general_query(message: str, restaurant_id: str) -> ChatResponse:
         )
 
         response_text = response.content[0].text
+        history.append({"role": "assistant", "content": response_text})
         return ChatResponse(response_text=response_text, action="query")
 
     except Exception as e:
+        # Remove the user message so history stays clean for next attempt
+        history.pop()
         return ChatResponse(
             response_text="I encountered an error processing your request.",
             action="query"
