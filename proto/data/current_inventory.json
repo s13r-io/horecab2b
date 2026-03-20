@@ -1,0 +1,26 @@
+{
+  "snapshot_date": "2026-03-19",
+  "restaurant_id": "R001",
+  "inventory": [
+    {"sku": "tomato", "quantity_on_hand": 8.0, "unit": "kg"},
+    {"sku": "onion", "quantity_on_hand": 12.0, "unit": "kg"},
+    {"sku": "chicken_breast", "quantity_on_hand": 2.0, "unit": "kg", "note": "Intentionally low for demo stockout scenario"},
+    {"sku": "paneer", "quantity_on_hand": 4.0, "unit": "kg"},
+    {"sku": "butter", "quantity_on_hand": 3.0, "unit": "kg"},
+    {"sku": "cream", "quantity_on_hand": 2.5, "unit": "kg"},
+    {"sku": "black_lentils", "quantity_on_hand": 5.0, "unit": "kg"},
+    {"sku": "red_lentils", "quantity_on_hand": 3.0, "unit": "kg"},
+    {"sku": "ginger_garlic", "quantity_on_hand": 1.5, "unit": "kg"},
+    {"sku": "yogurt", "quantity_on_hand": 3.0, "unit": "kg"},
+    {"sku": "wheat_flour", "quantity_on_hand": 8.0, "unit": "kg"},
+    {"sku": "rice_basmati", "quantity_on_hand": 6.0, "unit": "kg"},
+    {"sku": "cooking_oil", "quantity_on_hand": 4.0, "unit": "litre"},
+    {"sku": "salt", "quantity_on_hand": 5.0, "unit": "kg"},
+    {"sku": "cumin_powder", "quantity_on_hand": 0.8, "unit": "kg"},
+    {"sku": "turmeric_powder", "quantity_on_hand": 0.5, "unit": "kg"},
+    {"sku": "red_chili_powder", "quantity_on_hand": 0.6, "unit": "kg"},
+    {"sku": "garam_masala", "quantity_on_hand": 0.4, "unit": "kg"},
+    {"sku": "coriander_leaves", "quantity_on_hand": 0.5, "unit": "kg"},
+    {"sku": "green_chili", "quantity_on_hand": 0.8, "unit": "kg"}
+  ]
+}

@@ -1,0 +1,211 @@
+{
+  "recipes": [
+    {
+      "dish_id": "D001",
+      "dish_name": "Butter Chicken",
+      "category": "Main Course",
+      "avg_price": 225,
+      "ingredients": [
+        {"sku": "chicken_breast", "quantity": 0.4, "unit": "kg"},
+        {"sku": "butter", "quantity": 0.05, "unit": "kg"},
+        {"sku": "tomato", "quantity": 0.15, "unit": "kg"},
+        {"sku": "onion", "quantity": 0.1, "unit": "kg"},
+        {"sku": "cream", "quantity": 0.08, "unit": "kg"},
+        {"sku": "ginger_garlic", "quantity": 0.02, "unit": "kg"},
+        {"sku": "red_chili_powder", "quantity": 0.005, "unit": "kg"},
+        {"sku": "garam_masala", "quantity": 0.003, "unit": "kg"},
+        {"sku": "salt", "quantity": 0.005, "unit": "kg"}
+      ]
+    },
+    {
+      "dish_id": "D002",
+      "dish_name": "Paneer Tikka",
+      "category": "Appetizer",
+      "avg_price": 200,
+      "ingredients": [
+        {"sku": "paneer", "quantity": 0.2, "unit": "kg"},
+        {"sku": "yogurt", "quantity": 0.1, "unit": "kg"},
+        {"sku": "tomato", "quantity": 0.1, "unit": "kg"},
+        {"sku": "onion", "quantity": 0.15, "unit": "kg"},
+        {"sku": "ginger_garlic", "quantity": 0.015, "unit": "kg"},
+        {"sku": "red_chili_powder", "quantity": 0.003, "unit": "kg"},
+        {"sku": "cumin_powder", "quantity": 0.002, "unit": "kg"},
+        {"sku": "cooking_oil", "quantity": 0.02, "unit": "litre"}
+      ]
+    },
+    {
+      "dish_id": "D003",
+      "dish_name": "Dal Makhani",
+      "category": "Main Course",
+      "avg_price": 140,
+      "ingredients": [
+        {"sku": "black_lentils", "quantity": 0.1, "unit": "kg"},
+        {"sku": "red_lentils", "quantity": 0.05, "unit": "kg"},
+        {"sku": "butter", "quantity": 0.03, "unit": "kg"},
+        {"sku": "cream", "quantity": 0.1, "unit": "kg"},
+        {"sku": "onion", "quantity": 0.1, "unit": "kg"},
+        {"sku": "ginger_garlic", "quantity": 0.02, "unit": "kg"},
+        {"sku": "tomato", "quantity": 0.08, "unit": "kg"},
+        {"sku": "cumin_powder", "quantity": 0.003, "unit": "kg"},
+        {"sku": "salt", "quantity": 0.005, "unit": "kg"}
+      ]
+    },
+    {
+      "dish_id": "D004",
+      "dish_name": "Naan",
+      "category": "Bread",
+      "avg_price": 40,
+      "ingredients": [
+        {"sku": "wheat_flour", "quantity": 0.08, "unit": "kg"},
+        {"sku": "yogurt", "quantity": 0.02, "unit": "kg"},
+        {"sku": "butter", "quantity": 0.01, "unit": "kg"},
+        {"sku": "salt", "quantity": 0.002, "unit": "kg"}
+      ]
+    },
+    {
+      "dish_id": "D005",
+      "dish_name": "Roti",
+      "category": "Bread",
+      "avg_price": 20,
+      "ingredients": [
+        {"sku": "wheat_flour", "quantity": 0.06, "unit": "kg"},
+        {"sku": "cooking_oil", "quantity": 0.005, "unit": "litre"},
+        {"sku": "salt", "quantity": 0.001, "unit": "kg"}
+      ]
+    },
+    {
+      "dish_id": "D006",
+      "dish_name": "Raita",
+      "category": "Side",
+      "avg_price": 50,
+      "ingredients": [
+        {"sku": "yogurt", "quantity": 0.2, "unit": "kg"},
+        {"sku": "onion", "quantity": 0.05, "unit": "kg"},
+        {"sku": "cumin_powder", "quantity": 0.002, "unit": "kg"},
+        {"sku": "salt", "quantity": 0.002, "unit": "kg"}
+      ]
+    },
+    {
+      "dish_id": "D007",
+      "dish_name": "Chicken Biryani",
+      "category": "Main Course",
+      "avg_price": 250,
+      "ingredients": [
+        {"sku": "chicken_breast", "quantity": 0.35, "unit": "kg"},
+        {"sku": "rice_basmati", "quantity": 0.2, "unit": "kg"},
+        {"sku": "onion", "quantity": 0.15, "unit": "kg"},
+        {"sku": "yogurt", "quantity": 0.05, "unit": "kg"},
+        {"sku": "ginger_garlic", "quantity": 0.02, "unit": "kg"},
+        {"sku": "cooking_oil", "quantity": 0.03, "unit": "litre"},
+        {"sku": "garam_masala", "quantity": 0.005, "unit": "kg"},
+        {"sku": "turmeric_powder", "quantity": 0.002, "unit": "kg"},
+        {"sku": "green_chili", "quantity": 0.01, "unit": "kg"},
+        {"sku": "coriander_leaves", "quantity": 0.01, "unit": "kg"},
+        {"sku": "salt", "quantity": 0.005, "unit": "kg"}
+      ]
+    },
+    {
+      "dish_id": "D008",
+      "dish_name": "Palak Paneer",
+      "category": "Main Course",
+      "avg_price": 180,
+      "ingredients": [
+        {"sku": "paneer", "quantity": 0.2, "unit": "kg"},
+        {"sku": "onion", "quantity": 0.08, "unit": "kg"},
+        {"sku": "tomato", "quantity": 0.08, "unit": "kg"},
+        {"sku": "ginger_garlic", "quantity": 0.015, "unit": "kg"},
+        {"sku": "green_chili", "quantity": 0.01, "unit": "kg"},
+        {"sku": "cumin_powder", "quantity": 0.003, "unit": "kg"},
+        {"sku": "garam_masala", "quantity": 0.002, "unit": "kg"},
+        {"sku": "cooking_oil", "quantity": 0.02, "unit": "litre"},
+        {"sku": "salt", "quantity": 0.003, "unit": "kg"}
+      ]
+    },
+    {
+      "dish_id": "D009",
+      "dish_name": "Jeera Rice",
+      "category": "Rice",
+      "avg_price": 100,
+      "ingredients": [
+        {"sku": "rice_basmati", "quantity": 0.15, "unit": "kg"},
+        {"sku": "cumin_powder", "quantity": 0.005, "unit": "kg"},
+        {"sku": "cooking_oil", "quantity": 0.01, "unit": "litre"},
+        {"sku": "salt", "quantity": 0.003, "unit": "kg"}
+      ]
+    },
+    {
+      "dish_id": "D010",
+      "dish_name": "Tandoori Chicken",
+      "category": "Appetizer",
+      "avg_price": 260,
+      "ingredients": [
+        {"sku": "chicken_breast", "quantity": 0.5, "unit": "kg"},
+        {"sku": "yogurt", "quantity": 0.08, "unit": "kg"},
+        {"sku": "ginger_garlic", "quantity": 0.02, "unit": "kg"},
+        {"sku": "red_chili_powder", "quantity": 0.005, "unit": "kg"},
+        {"sku": "turmeric_powder", "quantity": 0.003, "unit": "kg"},
+        {"sku": "cooking_oil", "quantity": 0.02, "unit": "litre"},
+        {"sku": "salt", "quantity": 0.005, "unit": "kg"}
+      ]
+    },
+    {
+      "dish_id": "D011",
+      "dish_name": "Chole",
+      "category": "Main Course",
+      "avg_price": 130,
+      "ingredients": [
+        {"sku": "onion", "quantity": 0.12, "unit": "kg"},
+        {"sku": "tomato", "quantity": 0.1, "unit": "kg"},
+        {"sku": "ginger_garlic", "quantity": 0.015, "unit": "kg"},
+        {"sku": "green_chili", "quantity": 0.01, "unit": "kg"},
+        {"sku": "cumin_powder", "quantity": 0.005, "unit": "kg"},
+        {"sku": "turmeric_powder", "quantity": 0.002, "unit": "kg"},
+        {"sku": "red_chili_powder", "quantity": 0.003, "unit": "kg"},
+        {"sku": "garam_masala", "quantity": 0.003, "unit": "kg"},
+        {"sku": "cooking_oil", "quantity": 0.02, "unit": "litre"},
+        {"sku": "coriander_leaves", "quantity": 0.01, "unit": "kg"},
+        {"sku": "salt", "quantity": 0.005, "unit": "kg"}
+      ]
+    },
+    {
+      "dish_id": "D012",
+      "dish_name": "Matar Paneer",
+      "category": "Main Course",
+      "avg_price": 170,
+      "ingredients": [
+        {"sku": "paneer", "quantity": 0.18, "unit": "kg"},
+        {"sku": "tomato", "quantity": 0.1, "unit": "kg"},
+        {"sku": "onion", "quantity": 0.1, "unit": "kg"},
+        {"sku": "ginger_garlic", "quantity": 0.015, "unit": "kg"},
+        {"sku": "green_chili", "quantity": 0.008, "unit": "kg"},
+        {"sku": "turmeric_powder", "quantity": 0.002, "unit": "kg"},
+        {"sku": "garam_masala", "quantity": 0.003, "unit": "kg"},
+        {"sku": "cooking_oil", "quantity": 0.02, "unit": "litre"},
+        {"sku": "coriander_leaves", "quantity": 0.01, "unit": "kg"},
+        {"sku": "salt", "quantity": 0.004, "unit": "kg"}
+      ]
+    },
+    {
+      "dish_id": "D013",
+      "dish_name": "Gulab Jamun",
+      "category": "Dessert",
+      "avg_price": 60,
+      "ingredients": [
+        {"sku": "wheat_flour", "quantity": 0.03, "unit": "kg"},
+        {"sku": "cooking_oil", "quantity": 0.04, "unit": "litre"},
+        {"sku": "cream", "quantity": 0.02, "unit": "kg"},
+        {"sku": "salt", "quantity": 0.001, "unit": "kg"}
+      ]
+    },
+    {
+      "dish_id": "D014",
+      "dish_name": "Masala Chai",
+      "category": "Beverage",
+      "avg_price": 30,
+      "ingredients": [
+        {"sku": "ginger_garlic", "quantity": 0.005, "unit": "kg"},
+        {"sku": "salt", "quantity": 0.001, "unit": "kg"}
+      ]
+    }
+  ]
+}

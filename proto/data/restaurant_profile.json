@@ -1,0 +1,10 @@
+{
+  "restaurant_id": "R001",
+  "name": "Spice Junction",
+  "cuisine": "North Indian",
+  "location": "Mumbai, Andheri West",
+  "avg_daily_covers": 100,
+  "operating_hours": "11:00-23:00",
+  "owner_name": "Raj Patel",
+  "contact": "+91-9800000001"
+}

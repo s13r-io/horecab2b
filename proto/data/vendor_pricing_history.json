@@ -1,0 +1,422 @@
+{
+  "vendors": [
+    {
+      "vendor_id": "V001",
+      "vendor_name": "Fresh Metro",
+      "category": "Vegetables & Fruits",
+      "contact": "+91-9876543210",
+      "whatsapp": "9876543210",
+      "delivery_time": "6:00 AM",
+      "delivery_days": 1,
+      "reliability_score": 0.92,
+      "quality_score": 0.88,
+      "credit_available": true,
+      "credit_days": 7,
+      "comm_preferences": {
+        "channel": "whatsapp",
+        "format": "text",
+        "language": "en",
+        "order_format_template": "Hi {vendor_name}, need: {items_list}. Delivery by {delivery_time} on {delivery_date}. Please confirm."
+      }
+    },
+    {
+      "vendor_id": "V002",
+      "vendor_name": "Hyperpure",
+      "category": "Mixed (Vegetables, Dairy, Dry Goods, Meat)",
+      "contact": "+91-9876543211",
+      "whatsapp": "9876543211",
+      "delivery_time": "7:00 AM",
+      "delivery_days": 1,
+      "reliability_score": 0.95,
+      "quality_score": 0.90,
+      "credit_available": true,
+      "credit_days": 10,
+      "comm_preferences": {
+        "channel": "whatsapp",
+        "format": "structured",
+        "language": "en",
+        "order_format_template": "ORDER REQUEST\nRestaurant: {restaurant_name}\nItems:\n{items_table}\nDelivery: {delivery_date} by {delivery_time}\nPlease confirm availability."
+      }
+    },
+    {
+      "vendor_id": "V003",
+      "vendor_name": "Local Meat Supplier",
+      "category": "Meat & Poultry",
+      "contact": "+91-9876543212",
+      "whatsapp": "9876543212",
+      "delivery_time": "6:30 AM",
+      "delivery_days": 1,
+      "reliability_score": 0.88,
+      "quality_score": 0.85,
+      "credit_available": true,
+      "credit_days": 5,
+      "comm_preferences": {
+        "channel": "whatsapp",
+        "format": "text",
+        "language": "hi",
+        "order_format_template": "Namaste {vendor_name}, {items_list} chahiye. {delivery_date} ko {delivery_time} tak delivery. Confirm karo."
+      }
+    },
+    {
+      "vendor_id": "V004",
+      "vendor_name": "Dairy Delight",
+      "category": "Dairy Products",
+      "contact": "+91-9876543213",
+      "whatsapp": "9876543213",
+      "delivery_time": "7:30 AM",
+      "delivery_days": 1,
+      "reliability_score": 0.93,
+      "quality_score": 0.92,
+      "credit_available": true,
+      "credit_days": 3,
+      "comm_preferences": {
+        "channel": "whatsapp",
+        "format": "text",
+        "language": "en",
+        "order_format_template": "Hi {vendor_name}, please deliver: {items_list}. By {delivery_time} on {delivery_date}. Confirm?"
+      }
+    },
+    {
+      "vendor_id": "V005",
+      "vendor_name": "Udaan Dry Goods",
+      "category": "Dry Goods & Spices",
+      "contact": "+91-9876543214",
+      "whatsapp": "9876543214",
+      "delivery_time": "8:00 AM",
+      "delivery_days": 2,
+      "reliability_score": 0.90,
+      "quality_score": 0.87,
+      "credit_available": true,
+      "credit_days": 15,
+      "comm_preferences": {
+        "channel": "whatsapp",
+        "format": "structured",
+        "language": "en",
+        "order_format_template": "ORDER\nFrom: {restaurant_name}\n{items_table}\nDelivery by: {delivery_date} {delivery_time}\nPayment: Credit ({credit_days} days)"
+      }
+    }
+  ],
+  "pricing_history": [
+    {
+      "snapshot_date": "2026-02-17",
+      "week": 1,
+      "prices": [
+        {
+          "vendor_id": "V001",
+          "items": {
+            "tomato": 28,
+            "onion": 22,
+            "ginger_garlic": 170,
+            "coriander_leaves": 60,
+            "green_chili": 45
+          }
+        },
+        {
+          "vendor_id": "V002",
+          "items": {
+            "tomato": 32,
+            "onion": 26,
+            "ginger_garlic": 180,
+            "paneer": 410,
+            "butter": 460,
+            "cream": 390,
+            "black_lentils": 118,
+            "red_lentils": 78,
+            "chicken_breast": 280,
+            "yogurt": 58,
+            "rice_basmati": 95,
+            "cooking_oil": 140,
+            "wheat_flour": 38
+          }
+        },
+        {
+          "vendor_id": "V003",
+          "items": {
+            "chicken_breast": 265
+          }
+        },
+        {
+          "vendor_id": "V004",
+          "items": {
+            "paneer": 395,
+            "butter": 445,
+            "cream": 370,
+            "yogurt": 55
+          }
+        },
+        {
+          "vendor_id": "V005",
+          "items": {
+            "wheat_flour": 35,
+            "rice_basmati": 90,
+            "cooking_oil": 135,
+            "salt": 18,
+            "cumin_powder": 320,
+            "turmeric_powder": 180,
+            "red_chili_powder": 280,
+            "garam_masala": 420,
+            "black_lentils": 110,
+            "red_lentils": 72
+          }
+        }
+      ]
+    },
+    {
+      "snapshot_date": "2026-02-24",
+      "week": 2,
+      "prices": [
+        {
+          "vendor_id": "V001",
+          "items": {
+            "tomato": 30,
+            "onion": 20,
+            "ginger_garlic": 175,
+            "coriander_leaves": 65,
+            "green_chili": 48
+          }
+        },
+        {
+          "vendor_id": "V002",
+          "items": {
+            "tomato": 34,
+            "onion": 24,
+            "ginger_garlic": 185,
+            "paneer": 415,
+            "butter": 465,
+            "cream": 395,
+            "black_lentils": 120,
+            "red_lentils": 80,
+            "chicken_breast": 285,
+            "yogurt": 60,
+            "rice_basmati": 98,
+            "cooking_oil": 142,
+            "wheat_flour": 40
+          }
+        },
+        {
+          "vendor_id": "V003",
+          "items": {
+            "chicken_breast": 270
+          }
+        },
+        {
+          "vendor_id": "V004",
+          "items": {
+            "paneer": 400,
+            "butter": 450,
+            "cream": 375,
+            "yogurt": 56
+          }
+        },
+        {
+          "vendor_id": "V005",
+          "items": {
+            "wheat_flour": 36,
+            "rice_basmati": 92,
+            "cooking_oil": 138,
+            "salt": 18,
+            "cumin_powder": 325,
+            "turmeric_powder": 182,
+            "red_chili_powder": 285,
+            "garam_masala": 425,
+            "black_lentils": 112,
+            "red_lentils": 74
+          }
+        }
+      ]
+    },
+    {
+      "snapshot_date": "2026-03-03",
+      "week": 3,
+      "prices": [
+        {
+          "vendor_id": "V001",
+          "items": {
+            "tomato": 33,
+            "onion": 25,
+            "ginger_garlic": 180,
+            "coriander_leaves": 62,
+            "green_chili": 50
+          }
+        },
+        {
+          "vendor_id": "V002",
+          "items": {
+            "tomato": 37,
+            "onion": 28,
+            "ginger_garlic": 190,
+            "paneer": 420,
+            "butter": 470,
+            "cream": 400,
+            "black_lentils": 122,
+            "red_lentils": 82,
+            "chicken_breast": 290,
+            "yogurt": 62,
+            "rice_basmati": 100,
+            "cooking_oil": 145,
+            "wheat_flour": 41
+          }
+        },
+        {
+          "vendor_id": "V003",
+          "items": {
+            "chicken_breast": 278
+          }
+        },
+        {
+          "vendor_id": "V004",
+          "items": {
+            "paneer": 405,
+            "butter": 455,
+            "cream": 380,
+            "yogurt": 58
+          }
+        },
+        {
+          "vendor_id": "V005",
+          "items": {
+            "wheat_flour": 37,
+            "rice_basmati": 94,
+            "cooking_oil": 140,
+            "salt": 19,
+            "cumin_powder": 330,
+            "turmeric_powder": 185,
+            "red_chili_powder": 290,
+            "garam_masala": 430,
+            "black_lentils": 115,
+            "red_lentils": 75
+          }
+        }
+      ]
+    },
+    {
+      "snapshot_date": "2026-03-10",
+      "week": 4,
+      "prices": [
+        {
+          "vendor_id": "V001",
+          "items": {
+            "tomato": 38,
+            "onion": 28,
+            "ginger_garlic": 190,
+            "coriander_leaves": 68,
+            "green_chili": 55
+          }
+        },
+        {
+          "vendor_id": "V002",
+          "items": {
+            "tomato": 42,
+            "onion": 32,
+            "ginger_garlic": 200,
+            "paneer": 425,
+            "butter": 475,
+            "cream": 410,
+            "black_lentils": 125,
+            "red_lentils": 85,
+            "chicken_breast": 295,
+            "yogurt": 65,
+            "rice_basmati": 105,
+            "cooking_oil": 150,
+            "wheat_flour": 43
+          }
+        },
+        {
+          "vendor_id": "V003",
+          "items": {
+            "chicken_breast": 285
+          }
+        },
+        {
+          "vendor_id": "V004",
+          "items": {
+            "paneer": 410,
+            "butter": 460,
+            "cream": 390,
+            "yogurt": 60
+          }
+        },
+        {
+          "vendor_id": "V005",
+          "items": {
+            "wheat_flour": 38,
+            "rice_basmati": 96,
+            "cooking_oil": 142,
+            "salt": 19,
+            "cumin_powder": 340,
+            "turmeric_powder": 190,
+            "red_chili_powder": 295,
+            "garam_masala": 440,
+            "black_lentils": 118,
+            "red_lentils": 78
+          }
+        }
+      ]
+    },
+    {
+      "snapshot_date": "2026-03-15",
+      "week": 5,
+      "note": "Holi Festival - Price Spike (+15-20% across all vendors)",
+      "prices": [
+        {
+          "vendor_id": "V001",
+          "items": {
+            "tomato": 52,
+            "onion": 38,
+            "ginger_garlic": 210,
+            "coriander_leaves": 85,
+            "green_chili": 68
+          }
+        },
+        {
+          "vendor_id": "V002",
+          "items": {
+            "tomato": 58,
+            "onion": 45,
+            "ginger_garlic": 225,
+            "paneer": 450,
+            "butter": 500,
+            "cream": 435,
+            "black_lentils": 140,
+            "red_lentils": 100,
+            "chicken_breast": 320,
+            "yogurt": 80,
+            "rice_basmati": 120,
+            "cooking_oil": 170,
+            "wheat_flour": 50
+          }
+        },
+        {
+          "vendor_id": "V003",
+          "items": {
+            "chicken_breast": 310
+          }
+        },
+        {
+          "vendor_id": "V004",
+          "items": {
+            "paneer": 440,
+            "butter": 490,
+            "cream": 420,
+            "yogurt": 72
+          }
+        },
+        {
+          "vendor_id": "V005",
+          "items": {
+            "wheat_flour": 44,
+            "rice_basmati": 110,
+            "cooking_oil": 162,
+            "salt": 22,
+            "cumin_powder": 380,
+            "turmeric_powder": 215,
+            "red_chili_powder": 335,
+            "garam_masala": 500,
+            "black_lentils": 132,
+            "red_lentils": 88
+          }
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,2854 @@
+{
+  "sales_history": [
+    {
+      "date": "2026-02-17",
+      "day_of_week": "Tuesday",
+      "weather": "sunny",
+      "is_event": false,
+      "event_name": null,
+      "covers": 83,
+      "sales": [
+        {
+          "dish_id": "D005",
+          "dish_name": "Roti",
+          "quantity": 14,
+          "revenue": 280
+        },
+        {
+          "dish_id": "D003",
+          "dish_name": "Dal Makhani",
+          "quantity": 13,
+          "revenue": 1820
+        },
+        {
+          "dish_id": "D001",
+          "dish_name": "Butter Chicken",
+          "quantity": 11,
+          "revenue": 2475
+        },
+        {
+          "dish_id": "D004",
+          "dish_name": "Naan",
+          "quantity": 9,
+          "revenue": 360
+        },
+        {
+          "dish_id": "D009",
+          "dish_name": "Jeera Rice",
+          "quantity": 6,
+          "revenue": 600
+        },
+        {
+          "dish_id": "D002",
+          "dish_name": "Paneer Tikka",
+          "quantity": 4,
+          "revenue": 800
+        },
+        {
+          "dish_id": "D007",
+          "dish_name": "Chicken Biryani",
+          "quantity": 3,
+          "revenue": 750
+        },
+        {
+          "dish_id": "D006",
+          "dish_name": "Raita",
+          "quantity": 2,
+          "revenue": 100
+        },
+        {
+          "dish_id": "D008",
+          "dish_name": "Palak Paneer",
+          "quantity": 1,
+          "revenue": 180
+        },
+        {
+          "dish_id": "D010",
+          "dish_name": "Tandoori Chicken",
+          "quantity": 1,
+          "revenue": 260
+        },
+        {
+          "dish_id": "D011",
+          "dish_name": "Chole",
+          "quantity": 1,
+          "revenue": 130
+        },
+        {
+          "dish_id": "D012",
+          "dish_name": "Matar Paneer",
+          "quantity": 1,
+          "revenue": 170
+        },
+        {
+          "dish_id": "D013",
+          "dish_name": "Gulab Jamun",
+          "quantity": 1,
+          "revenue": 60
+        },
+        {
+          "dish_id": "D014",
+          "dish_name": "Masala Chai",
+          "quantity": 1,
+          "revenue": 30
+        }
+      ],
+      "total_revenue": 8015
+    },
+    {
+      "date": "2026-02-18",
+      "day_of_week": "Wednesday",
+      "weather": "rainy",
+      "is_event": false,
+      "event_name": null,
+      "covers": 93,
+      "sales": [
+        {
+          "dish_id": "D005",
+          "dish_name": "Roti",
+          "quantity": 16,
+          "revenue": 320
+        },
+        {
+          "dish_id": "D003",
+          "dish_name": "Dal Makhani",
+          "quantity": 18,
+          "revenue": 2520
+        },
+        {
+          "dish_id": "D001",
+          "dish_name": "Butter Chicken",
+          "quantity": 13,
+          "revenue": 2925
+        },
+        {
+          "dish_id": "D004",
+          "dish_name": "Naan",
+          "quantity": 9,
+          "revenue": 360
+        },
+        {
+          "dish_id": "D009",
+          "dish_name": "Jeera Rice",
+          "quantity": 7,
+          "revenue": 700
+        },
+        {
+          "dish_id": "D002",
+          "dish_name": "Paneer Tikka",
+          "quantity": 5,
+          "revenue": 1000
+        },
+        {
+          "dish_id": "D007",
+          "dish_name": "Chicken Biryani",
+          "quantity": 3,
+          "revenue": 750
+        },
+        {
+          "dish_id": "D006",
+          "dish_name": "Raita",
+          "quantity": 1,
+          "revenue": 50
+        },
+        {
+          "dish_id": "D008",
+          "dish_name": "Palak Paneer",
+          "quantity": 1,
+          "revenue": 180
+        },
+        {
+          "dish_id": "D010",
+          "dish_name": "Tandoori Chicken",
+          "quantity": 1,
+          "revenue": 260
+        },
+        {
+          "dish_id": "D011",
+          "dish_name": "Chole",
+          "quantity": 1,
+          "revenue": 130
+        },
+        {
+          "dish_id": "D012",
+          "dish_name": "Matar Paneer",
+          "quantity": 1,
+          "revenue": 170
+        },
+        {
+          "dish_id": "D013",
+          "dish_name": "Gulab Jamun",
+          "quantity": 1,
+          "revenue": 60
+        },
+        {
+          "dish_id": "D014",
+          "dish_name": "Masala Chai",
+          "quantity": 1,
+          "revenue": 30
+        }
+      ],
+      "total_revenue": 9455
+    },
+    {
+      "date": "2026-02-19",
+      "day_of_week": "Thursday",
+      "weather": "sunny",
+      "is_event": false,
+      "event_name": null,
+      "covers": 81,
+      "sales": [
+        {
+          "dish_id": "D005",
+          "dish_name": "Roti",
+          "quantity": 16,
+          "revenue": 320
+        },
+        {
+          "dish_id": "D003",
+          "dish_name": "Dal Makhani",
+          "quantity": 14,
+          "revenue": 1960
+        },
+        {
+          "dish_id": "D001",
+          "dish_name": "Butter Chicken",
+          "quantity": 13,
+          "revenue": 2925
+        },
+        {
+          "dish_id": "D004",
+          "dish_name": "Naan",
+          "quantity": 8,
+          "revenue": 320
+        },
+        {
+          "dish_id": "D009",
+          "dish_name": "Jeera Rice",
+          "quantity": 6,
+          "revenue": 600
+        },
+        {
+          "dish_id": "D002",
+          "dish_name": "Paneer Tikka",
+          "quantity": 4,
+          "revenue": 800
+        },
+        {
+          "dish_id": "D007",
+          "dish_name": "Chicken Biryani",
+          "quantity": 4,
+          "revenue": 1000
+        },
+        {
+          "dish_id": "D006",
+          "dish_name": "Raita",
+          "quantity": 3,
+          "revenue": 150
+        },
+        {
+          "dish_id": "D008",
+          "dish_name": "Palak Paneer",
+          "quantity": 1,
+          "revenue": 180
+        },
+        {
+          "dish_id": "D010",
+          "dish_name": "Tandoori Chicken",
+          "quantity": 1,
+          "revenue": 260
+        },
+        {
+          "dish_id": "D011",
+          "dish_name": "Chole",
+          "quantity": 1,
+          "revenue": 130
+        },
+        {
+          "dish_id": "D012",
+          "dish_name": "Matar Paneer",
+          "quantity": 1,
+          "revenue": 170
+        },
+        {
+          "dish_id": "D013",
+          "dish_name": "Gulab Jamun",
+          "quantity": 1,
+          "revenue": 60
+        },
+        {
+          "dish_id": "D014",
+          "dish_name": "Masala Chai",
+          "quantity": 1,
+          "revenue": 30
+        }
+      ],
+      "total_revenue": 8905
+    },
+    {
+      "date": "2026-02-20",
+      "day_of_week": "Friday",
+      "weather": "sunny",
+      "is_event": false,
+      "event_name": null,
+      "covers": 87,
+      "sales": [
+        {
+          "dish_id": "D005",
+          "dish_name": "Roti",
+          "quantity": 18,
+          "revenue": 360
+        },
+        {
+          "dish_id": "D003",
+          "dish_name": "Dal Makhani",
+          "quantity": 14,
+          "revenue": 1960
+        },
+        {
+          "dish_id": "D001",
+          "dish_name": "Butter Chicken",
+          "quantity": 12,
+          "revenue": 2700
+        },
+        {
+          "dish_id": "D004",
+          "dish_name": "Naan",
+          "quantity": 10,
+          "revenue": 400
+        },
+        {
+          "dish_id": "D009",
+          "dish_name": "Jeera Rice",
+          "quantity": 5,
+          "revenue": 500
+        },
+        {
+          "dish_id": "D002",
+          "dish_name": "Paneer Tikka",
+          "quantity": 4,
+          "revenue": 800
+        },
+        {
+          "dish_id": "D007",
+          "dish_name": "Chicken Biryani",
+          "quantity": 4,
+          "revenue": 1000
+        },
+        {
+          "dish_id": "D006",
+          "dish_name": "Raita",
+          "quantity": 3,
+          "revenue": 150
+        },
+        {
+          "dish_id": "D008",
+          "dish_name": "Palak Paneer",
+          "quantity": 1,
+          "revenue": 180
+        },
+        {
+          "dish_id": "D010",
+          "dish_name": "Tandoori Chicken",
+          "quantity": 1,
+          "revenue": 260
+        },
+        {
+          "dish_id": "D011",
+          "dish_name": "Chole",
+          "quantity": 1,
+          "revenue": 130
+        },
+        {
+          "dish_id": "D012",
+          "dish_name": "Matar Paneer",
+          "quantity": 1,
+          "revenue": 170
+        },
+        {
+          "dish_id": "D013",
+          "dish_name": "Gulab Jamun",
+          "quantity": 1,
+          "revenue": 60
+        },
+        {
+          "dish_id": "D014",
+          "dish_name": "Masala Chai",
+          "quantity": 1,
+          "revenue": 30
+        }
+      ],
+      "total_revenue": 8700
+    },
+    {
+      "date": "2026-02-21",
+      "day_of_week": "Saturday",
+      "weather": "sunny",
+      "is_event": false,
+      "event_name": null,
+      "covers": 118,
+      "sales": [
+        {
+          "dish_id": "D005",
+          "dish_name": "Roti",
+          "quantity": 25,
+          "revenue": 500
+        },
+        {
+          "dish_id": "D003",
+          "dish_name": "Dal Makhani",
+          "quantity": 21,
+          "revenue": 2940
+        },
+        {
+          "dish_id": "D001",
+          "dish_name": "Butter Chicken",
+          "quantity": 17,
+          "revenue": 3825
+        },
+        {
+          "dish_id": "D004",
+          "dish_name": "Naan",
+          "quantity": 14,
+          "revenue": 560
+        },
+        {
+          "dish_id": "D009",
+          "dish_name": "Jeera Rice",
+          "quantity": 9,
+          "revenue": 900
+        },
+        {
+          "dish_id": "D002",
+          "dish_name": "Paneer Tikka",
+          "quantity": 7,
+          "revenue": 1400
+        },
+        {
+          "dish_id": "D007",
+          "dish_name": "Chicken Biryani",
+          "quantity": 4,
+          "revenue": 1000
+        },
+        {
+          "dish_id": "D006",
+          "dish_name": "Raita",
+          "quantity": 3,
+          "revenue": 150
+        },
+        {
+          "dish_id": "D008",
+          "dish_name": "Palak Paneer",
+          "quantity": 1,
+          "revenue": 180
+        },
+        {
+          "dish_id": "D010",
+          "dish_name": "Tandoori Chicken",
+          "quantity": 1,
+          "revenue": 260
+        },
+        {
+          "dish_id": "D011",
+          "dish_name": "Chole",
+          "quantity": 1,
+          "revenue": 130
+        },
+        {
+          "dish_id": "D012",
+          "dish_name": "Matar Paneer",
+          "quantity": 2,
+          "revenue": 340
+        },
+        {
+          "dish_id": "D013",
+          "dish_name": "Gulab Jamun",
+          "quantity": 2,
+          "revenue": 120
+        },
+        {
+          "dish_id": "D014",
+          "dish_name": "Masala Chai",
+          "quantity": 1,
+          "revenue": 30
+        }
+      ],
+      "total_revenue": 12335
+    },
+    {
+      "date": "2026-02-22",
+      "day_of_week": "Sunday",
+      "weather": "sunny",
+      "is_event": false,
+      "event_name": null,
+      "covers": 128,
+      "sales": [
+        {
+          "dish_id": "D005",
+          "dish_name": "Roti",
+          "quantity": 24,
+          "revenue": 480
+        },
+        {
+          "dish_id": "D003",
+          "dish_name": "Dal Makhani",
+          "quantity": 24,
+          "revenue": 3360
+        },
+        {
+          "dish_id": "D001",
+          "dish_name": "Butter Chicken",
+          "quantity": 18,
+          "revenue": 4050
+        },
+        {
+          "dish_id": "D004",
+          "dish_name": "Naan",
+          "quantity": 14,
+          "revenue": 560
+        },
+        {
+          "dish_id": "D009",
+          "dish_name": "Jeera Rice",
+          "quantity": 9,
+          "revenue": 900
+        },
+        {
+          "dish_id": "D002",
+          "dish_name": "Paneer Tikka",
+          "quantity": 7,
+          "revenue": 1400
+        },
+        {
+          "dish_id": "D007",
+          "dish_name": "Chicken Biryani",
+          "quantity": 5,
+          "revenue": 1250
+        },
+        {
+          "dish_id": "D006",
+          "dish_name": "Raita",
+          "quantity": 5,
+          "revenue": 250
+        },
+        {
+          "dish_id": "D008",
+          "dish_name": "Palak Paneer",
+          "quantity": 2,
+          "revenue": 360
+        },
+        {
+          "dish_id": "D010",
+          "dish_name": "Tandoori Chicken",
+          "quantity": 1,
+          "revenue": 260
+        },
+        {
+          "dish_id": "D011",
+          "dish_name": "Chole",
+          "quantity": 1,
+          "revenue": 130
+        },
+        {
+          "dish_id": "D012",
+          "dish_name": "Matar Paneer",
+          "quantity": 2,
+          "revenue": 340
+        },
+        {
+          "dish_id": "D013",
+          "dish_name": "Gulab Jamun",
+          "quantity": 2,
+          "revenue": 120
+        },
+        {
+          "dish_id": "D014",
+          "dish_name": "Masala Chai",
+          "quantity": 1,
+          "revenue": 30
+        }
+      ],
+      "total_revenue": 13490
+    },
+    {
+      "date": "2026-02-23",
+      "day_of_week": "Monday",
+      "weather": "sunny",
+      "is_event": false,
+      "event_name": null,
+      "covers": 81,
+      "sales": [
+        {
+          "dish_id": "D005",
+          "dish_name": "Roti",
+          "quantity": 17,
+          "revenue": 340
+        },
+        {
+          "dish_id": "D003",
+          "dish_name": "Dal Makhani",
+          "quantity": 13,
+          "revenue": 1820
+        },
+        {
+          "dish_id": "D001",
+          "dish_name": "Butter Chicken",
+          "quantity": 11,
+          "revenue": 2475
+        },
+        {
+          "dish_id": "D004",
+          "dish_name": "Naan",
+          "quantity": 9,
+          "revenue": 360
+        },
+        {
+          "dish_id": "D009",
+          "dish_name": "Jeera Rice",
+          "quantity": 6,
+          "revenue": 600
+        },
+        {
+          "dish_id": "D002",
+          "dish_name": "Paneer Tikka",
+          "quantity": 3,
+          "revenue": 600
+        },
+        {
+          "dish_id": "D007",
+          "dish_name": "Chicken Biryani",
+          "quantity": 4,
+          "revenue": 1000
+        },
+        {
+          "dish_id": "D006",
+          "dish_name": "Raita",
+          "quantity": 2,
+          "revenue": 100
+        },
+        {
+          "dish_id": "D008",
+          "dish_name": "Palak Paneer",
+          "quantity": 1,
+          "revenue": 180
+        },
+        {
+          "dish_id": "D010",
+          "dish_name": "Tandoori Chicken",
+          "quantity": 1,
+          "revenue": 260
+        },
+        {
+          "dish_id": "D011",
+          "dish_name": "Chole",
+          "quantity": 1,
+          "revenue": 130
+        },
+        {
+          "dish_id": "D012",
+          "dish_name": "Matar Paneer",
+          "quantity": 1,
+          "revenue": 170
+        },
+        {
+          "dish_id": "D013",
+          "dish_name": "Gulab Jamun",
+          "quantity": 1,
+          "revenue": 60
+        },
+        {
+          "dish_id": "D014",
+          "dish_name": "Masala Chai",
+          "quantity": 1,
+          "revenue": 30
+        }
+      ],
+      "total_revenue": 8125
+    },
+    {
+      "date": "2026-02-24",
+      "day_of_week": "Tuesday",
+      "weather": "sunny",
+      "is_event": false,
+      "event_name": null,
+      "covers": 88,
+      "sales": [
+        {
+          "dish_id": "D005",
+          "dish_name": "Roti",
+          "quantity": 17,
+          "revenue": 340
+        },
+        {
+          "dish_id": "D003",
+          "dish_name": "Dal Makhani",
+          "quantity": 14,
+          "revenue": 1960
+        },
+        {
+          "dish_id": "D001",
+          "dish_name": "Butter Chicken",
+          "quantity": 12,
+          "revenue": 2700
+        },
+        {
+          "dish_id": "D004",
+          "dish_name": "Naan",
+          "quantity": 9,
+          "revenue": 360
+        },
+        {
+          "dish_id": "D009",
+          "dish_name": "Jeera Rice",
+          "quantity": 6,
+          "revenue": 600
+        },
+        {
+          "dish_id": "D002",
+          "dish_name": "Paneer Tikka",
+          "quantity": 5,
+          "revenue": 1000
+        },
+        {
+          "dish_id": "D007",
+          "dish_name": "Chicken Biryani",
+          "quantity": 4,
+          "revenue": 1000
+        },
+        {
+          "dish_id": "D006",
+          "dish_name": "Raita",
+          "quantity": 3,
+          "revenue": 150
+        },
+        {
+          "dish_id": "D008",
+          "dish_name": "Palak Paneer",
+          "quantity": 1,
+          "revenue": 180
+        },
+        {
+          "dish_id": "D010",
+          "dish_name": "Tandoori Chicken",
+          "quantity": 1,
+          "revenue": 260
+        },
+        {
+          "dish_id": "D011",
+          "dish_name": "Chole",
+          "quantity": 1,
+          "revenue": 130
+        },
+        {
+          "dish_id": "D012",
+          "dish_name": "Matar Paneer",
+          "quantity": 1,
+          "revenue": 170
+        },
+        {
+          "dish_id": "D013",
+          "dish_name": "Gulab Jamun",
+          "quantity": 1,
+          "revenue": 60
+        },
+        {
+          "dish_id": "D014",
+          "dish_name": "Masala Chai",
+          "quantity": 1,
+          "revenue": 30
+        }
+      ],
+      "total_revenue": 8940
+    },
+    {
+      "date": "2026-02-25",
+      "day_of_week": "Wednesday",
+      "weather": "sunny",
+      "is_event": false,
+      "event_name": null,
+      "covers": 86,
+      "sales": [
+        {
+          "dish_id": "D005",
+          "dish_name": "Roti",
+          "quantity": 15,
+          "revenue": 300
+        },
+        {
+          "dish_id": "D003",
+          "dish_name": "Dal Makhani",
+          "quantity": 15,
+          "revenue": 2100
+        },
+        {
+          "dish_id": "D001",
+          "dish_name": "Butter Chicken",
+          "quantity": 12,
+          "revenue": 2700
+        },
+        {
+          "dish_id": "D004",
+          "dish_name": "Naan",
+          "quantity": 10,
+          "revenue": 400
+        },
+        {
+          "dish_id": "D009",
+          "dish_name": "Jeera Rice",
+          "quantity": 6,
+          "revenue": 600
+        },
+        {
+          "dish_id": "D002",
+          "dish_name": "Paneer Tikka",
+          "quantity": 4,
+          "revenue": 800
+        },
+        {
+          "dish_id": "D007",
+          "dish_name": "Chicken Biryani",
+          "quantity": 3,
+          "revenue": 750
+        },
+        {
+          "dish_id": "D006",
+          "dish_name": "Raita",
+          "quantity": 2,
+          "revenue": 100
+        },
+        {
+          "dish_id": "D008",
+          "dish_name": "Palak Paneer",
+          "quantity": 1,
+          "revenue": 180
+        },
+        {
+          "dish_id": "D010",
+          "dish_name": "Tandoori Chicken",
+          "quantity": 1,
+          "revenue": 260
+        },
+        {
+          "dish_id": "D011",
+          "dish_name": "Chole",
+          "quantity": 1,
+          "revenue": 130
+        },
+        {
+          "dish_id": "D012",
+          "dish_name": "Matar Paneer",
+          "quantity": 1,
+          "revenue": 170
+        },
+        {
+          "dish_id": "D013",
+          "dish_name": "Gulab Jamun",
+          "quantity": 1,
+          "revenue": 60
+        },
+        {
+          "dish_id": "D014",
+          "dish_name": "Masala Chai",
+          "quantity": 1,
+          "revenue": 30
+        }
+      ],
+      "total_revenue": 8580
+    },
+    {
+      "date": "2026-02-26",
+      "day_of_week": "Thursday",
+      "weather": "sunny",
+      "is_event": false,
+      "event_name": null,
+      "covers": 82,
+      "sales": [
+        {
+          "dish_id": "D005",
+          "dish_name": "Roti",
+          "quantity": 14,
+          "revenue": 280
+        },
+        {
+          "dish_id": "D003",
+          "dish_name": "Dal Makhani",
+          "quantity": 13,
+          "revenue": 1820
+        },
+        {
+          "dish_id": "D001",
+          "dish_name": "Butter Chicken",
+          "quantity": 10,
+          "revenue": 2250
+        },
+        {
+          "dish_id": "D004",
+          "dish_name": "Naan",
+          "quantity": 9,
+          "revenue": 360
+        },
+        {
+          "dish_id": "D009",
+          "dish_name": "Jeera Rice",
+          "quantity": 6,
+          "revenue": 600
+        },
+        {
+          "dish_id": "D002",
+          "dish_name": "Paneer Tikka",
+          "quantity": 3,
+          "revenue": 600
+        },
+        {
+          "dish_id": "D007",
+          "dish_name": "Chicken Biryani",
+          "quantity": 3,
+          "revenue": 750
+        },
+        {
+          "dish_id": "D006",
+          "dish_name": "Raita",
+          "quantity": 3,
+          "revenue": 150
+        },
+        {
+          "dish_id": "D008",
+          "dish_name": "Palak Paneer",
+          "quantity": 1,
+          "revenue": 180
+        },
+        {
+          "dish_id": "D010",
+          "dish_name": "Tandoori Chicken",
+          "quantity": 1,
+          "revenue": 260
+        },
+        {
+          "dish_id": "D011",
+          "dish_name": "Chole",
+          "quantity": 1,
+          "revenue": 130
+        },
+        {
+          "dish_id": "D012",
+          "dish_name": "Matar Paneer",
+          "quantity": 1,
+          "revenue": 170
+        },
+        {
+          "dish_id": "D013",
+          "dish_name": "Gulab Jamun",
+          "quantity": 1,
+          "revenue": 60
+        },
+        {
+          "dish_id": "D014",
+          "dish_name": "Masala Chai",
+          "quantity": 1,
+          "revenue": 30
+        }
+      ],
+      "total_revenue": 7640
+    },
+    {
+      "date": "2026-02-27",
+      "day_of_week": "Friday",
+      "weather": "sunny",
+      "is_event": false,
+      "event_name": null,
+      "covers": 86,
+      "sales": [
+        {
+          "dish_id": "D005",
+          "dish_name": "Roti",
+          "quantity": 17,
+          "revenue": 340
+        },
+        {
+          "dish_id": "D003",
+          "dish_name": "Dal Makhani",
+          "quantity": 14,
+          "revenue": 1960
+        },
+        {
+          "dish_id": "D001",
+          "dish_name": "Butter Chicken",
+          "quantity": 12,
+          "revenue": 2700
+        },
+        {
+          "dish_id": "D004",
+          "dish_name": "Naan",
+          "quantity": 9,
+          "revenue": 360
+        },
+        {
+          "dish_id": "D009",
+          "dish_name": "Jeera Rice",
+          "quantity": 6,
+          "revenue": 600
+        },
+        {
+          "dish_id": "D002",
+          "dish_name": "Paneer Tikka",
+          "quantity": 4,
+          "revenue": 800
+        },
+        {
+          "dish_id": "D007",
+          "dish_name": "Chicken Biryani",
+          "quantity": 3,
+          "revenue": 750
+        },
+        {
+          "dish_id": "D006",
+          "dish_name": "Raita",
+          "quantity": 2,
+          "revenue": 100
+        },
+        {
+          "dish_id": "D008",
+          "dish_name": "Palak Paneer",
+          "quantity": 1,
+          "revenue": 180
+        },
+        {
+          "dish_id": "D010",
+          "dish_name": "Tandoori Chicken",
+          "quantity": 1,
+          "revenue": 260
+        },
+        {
+          "dish_id": "D011",
+          "dish_name": "Chole",
+          "quantity": 1,
+          "revenue": 130
+        },
+        {
+          "dish_id": "D012",
+          "dish_name": "Matar Paneer",
+          "quantity": 1,
+          "revenue": 170
+        },
+        {
+          "dish_id": "D013",
+          "dish_name": "Gulab Jamun",
+          "quantity": 1,
+          "revenue": 60
+        },
+        {
+          "dish_id": "D014",
+          "dish_name": "Masala Chai",
+          "quantity": 1,
+          "revenue": 30
+        }
+      ],
+      "total_revenue": 8440
+    },
+    {
+      "date": "2026-02-28",
+      "day_of_week": "Saturday",
+      "weather": "sunny",
+      "is_event": false,
+      "event_name": null,
+      "covers": 110,
+      "sales": [
+        {
+          "dish_id": "D005",
+          "dish_name": "Roti",
+          "quantity": 23,
+          "revenue": 460
+        },
+        {
+          "dish_id": "D003",
+          "dish_name": "Dal Makhani",
+          "quantity": 20,
+          "revenue": 2800
+        },
+        {
+          "dish_id": "D001",
+          "dish_name": "Butter Chicken",
+          "quantity": 14,
+          "revenue": 3150
+        },
+        {
+          "dish_id": "D004",
+          "dish_name": "Naan",
+          "quantity": 12,
+          "revenue": 480
+        },
+        {
+          "dish_id": "D009",
+          "dish_name": "Jeera Rice",
+          "quantity": 8,
+          "revenue": 800
+        },
+        {
+          "dish_id": "D002",
+          "dish_name": "Paneer Tikka",
+          "quantity": 5,
+          "revenue": 1000
+        },
+        {
+          "dish_id": "D007",
+          "dish_name": "Chicken Biryani",
+          "quantity": 4,
+          "revenue": 1000
+        },
+        {
+          "dish_id": "D006",
+          "dish_name": "Raita",
+          "quantity": 4,
+          "revenue": 200
+        },
+        {
+          "dish_id": "D008",
+          "dish_name": "Palak Paneer",
+          "quantity": 2,
+          "revenue": 360
+        },
+        {
+          "dish_id": "D010",
+          "dish_name": "Tandoori Chicken",
+          "quantity": 1,
+          "revenue": 260
+        },
+        {
+          "dish_id": "D011",
+          "dish_name": "Chole",
+          "quantity": 2,
+          "revenue": 260
+        },
+        {
+          "dish_id": "D012",
+          "dish_name": "Matar Paneer",
+          "quantity": 2,
+          "revenue": 340
+        },
+        {
+          "dish_id": "D013",
+          "dish_name": "Gulab Jamun",
+          "quantity": 1,
+          "revenue": 60
+        },
+        {
+          "dish_id": "D014",
+          "dish_name": "Masala Chai",
+          "quantity": 1,
+          "revenue": 30
+        }
+      ],
+      "total_revenue": 11200
+    },
+    {
+      "date": "2026-03-01",
+      "day_of_week": "Sunday",
+      "weather": "sunny",
+      "is_event": false,
+      "event_name": null,
+      "covers": 125,
+      "sales": [
+        {
+          "dish_id": "D005",
+          "dish_name": "Roti",
+          "quantity": 24,
+          "revenue": 480
+        },
+        {
+          "dish_id": "D003",
+          "dish_name": "Dal Makhani",
+          "quantity": 21,
+          "revenue": 2940
+        },
+        {
+          "dish_id": "D001",
+          "dish_name": "Butter Chicken",
+          "quantity": 19,
+          "revenue": 4275
+        },
+        {
+          "dish_id": "D004",
+          "dish_name": "Naan",
+          "quantity": 13,
+          "revenue": 520
+        },
+        {
+          "dish_id": "D009",
+          "dish_name": "Jeera Rice",
+          "quantity": 10,
+          "revenue": 1000
+        },
+        {
+          "dish_id": "D002",
+          "dish_name": "Paneer Tikka",
+          "quantity": 7,
+          "revenue": 1400
+        },
+        {
+          "dish_id": "D007",
+          "dish_name": "Chicken Biryani",
+          "quantity": 5,
+          "revenue": 1250
+        },
+        {
+          "dish_id": "D006",
+          "dish_name": "Raita",
+          "quantity": 5,
+          "revenue": 250
+        },
+        {
+          "dish_id": "D008",
+          "dish_name": "Palak Paneer",
+          "quantity": 2,
+          "revenue": 360
+        },
+        {
+          "dish_id": "D010",
+          "dish_name": "Tandoori Chicken",
+          "quantity": 1,
+          "revenue": 260
+        },
+        {
+          "dish_id": "D011",
+          "dish_name": "Chole",
+          "quantity": 1,
+          "revenue": 130
+        },
+        {
+          "dish_id": "D012",
+          "dish_name": "Matar Paneer",
+          "quantity": 2,
+          "revenue": 340
+        },
+        {
+          "dish_id": "D013",
+          "dish_name": "Gulab Jamun",
+          "quantity": 1,
+          "revenue": 60
+        },
+        {
+          "dish_id": "D014",
+          "dish_name": "Masala Chai",
+          "quantity": 1,
+          "revenue": 30
+        }
+      ],
+      "total_revenue": 13295
+    },
+    {
+      "date": "2026-03-02",
+      "day_of_week": "Monday",
+      "weather": "sunny",
+      "is_event": false,
+      "event_name": null,
+      "covers": 94,
+      "sales": [
+        {
+          "dish_id": "D005",
+          "dish_name": "Roti",
+          "quantity": 17,
+          "revenue": 340
+        },
+        {
+          "dish_id": "D003",
+          "dish_name": "Dal Makhani",
+          "quantity": 17,
+          "revenue": 2380
+        },
+        {
+          "dish_id": "D001",
+          "dish_name": "Butter Chicken",
+          "quantity": 13,
+          "revenue": 2925
+        },
+        {
+          "dish_id": "D004",
+          "dish_name": "Naan",
+          "quantity": 11,
+          "revenue": 440
+        },
+        {
+          "dish_id": "D009",
+          "dish_name": "Jeera Rice",
+          "quantity": 7,
+          "revenue": 700
+        },
+        {
+          "dish_id": "D002",
+          "dish_name": "Paneer Tikka",
+          "quantity": 4,
+          "revenue": 800
+        },
+        {
+          "dish_id": "D007",
+          "dish_name": "Chicken Biryani",
+          "quantity": 4,
+          "revenue": 1000
+        },
+        {
+          "dish_id": "D006",
+          "dish_name": "Raita",
+          "quantity": 3,
+          "revenue": 150
+        },
+        {
+          "dish_id": "D008",
+          "dish_name": "Palak Paneer",
+          "quantity": 1,
+          "revenue": 180
+        },
+        {
+          "dish_id": "D010",
+          "dish_name": "Tandoori Chicken",
+          "quantity": 1,
+          "revenue": 260
+        },
+        {
+          "dish_id": "D011",
+          "dish_name": "Chole",
+          "quantity": 1,
+          "revenue": 130
+        },
+        {
+          "dish_id": "D012",
+          "dish_name": "Matar Paneer",
+          "quantity": 1,
+          "revenue": 170
+        },
+        {
+          "dish_id": "D013",
+          "dish_name": "Gulab Jamun",
+          "quantity": 1,
+          "revenue": 60
+        },
+        {
+          "dish_id": "D014",
+          "dish_name": "Masala Chai",
+          "quantity": 1,
+          "revenue": 30
+        }
+      ],
+      "total_revenue": 9565
+    },
+    {
+      "date": "2026-03-03",
+      "day_of_week": "Tuesday",
+      "weather": "sunny",
+      "is_event": false,
+      "event_name": null,
+      "covers": 92,
+      "sales": [
+        {
+          "dish_id": "D005",
+          "dish_name": "Roti",
+          "quantity": 19,
+          "revenue": 380
+        },
+        {
+          "dish_id": "D003",
+          "dish_name": "Dal Makhani",
+          "quantity": 14,
+          "revenue": 1960
+        },
+        {
+          "dish_id": "D001",
+          "dish_name": "Butter Chicken",
+          "quantity": 11,
+          "revenue": 2475
+        },
+        {
+          "dish_id": "D004",
+          "dish_name": "Naan",
+          "quantity": 10,
+          "revenue": 400
+        },
+        {
+          "dish_id": "D009",
+          "dish_name": "Jeera Rice",
+          "quantity": 7,
+          "revenue": 700
+        },
+        {
+          "dish_id": "D002",
+          "dish_name": "Paneer Tikka",
+          "quantity": 5,
+          "revenue": 1000
+        },
+        {
+          "dish_id": "D007",
+          "dish_name": "Chicken Biryani",
+          "quantity": 3,
+          "revenue": 750
+        },
+        {
+          "dish_id": "D006",
+          "dish_name": "Raita",
+          "quantity": 3,
+          "revenue": 150
+        },
+        {
+          "dish_id": "D008",
+          "dish_name": "Palak Paneer",
+          "quantity": 1,
+          "revenue": 180
+        },
+        {
+          "dish_id": "D010",
+          "dish_name": "Tandoori Chicken",
+          "quantity": 1,
+          "revenue": 260
+        },
+        {
+          "dish_id": "D011",
+          "dish_name": "Chole",
+          "quantity": 1,
+          "revenue": 130
+        },
+        {
+          "dish_id": "D012",
+          "dish_name": "Matar Paneer",
+          "quantity": 1,
+          "revenue": 170
+        },
+        {
+          "dish_id": "D013",
+          "dish_name": "Gulab Jamun",
+          "quantity": 1,
+          "revenue": 60
+        },
+        {
+          "dish_id": "D014",
+          "dish_name": "Masala Chai",
+          "quantity": 1,
+          "revenue": 30
+        }
+      ],
+      "total_revenue": 8645
+    },
+    {
+      "date": "2026-03-04",
+      "day_of_week": "Wednesday",
+      "weather": "sunny",
+      "is_event": false,
+      "event_name": null,
+      "covers": 81,
+      "sales": [
+        {
+          "dish_id": "D005",
+          "dish_name": "Roti",
+          "quantity": 16,
+          "revenue": 320
+        },
+        {
+          "dish_id": "D003",
+          "dish_name": "Dal Makhani",
+          "quantity": 14,
+          "revenue": 1960
+        },
+        {
+          "dish_id": "D001",
+          "dish_name": "Butter Chicken",
+          "quantity": 12,
+          "revenue": 2700
+        },
+        {
+          "dish_id": "D004",
+          "dish_name": "Naan",
+          "quantity": 8,
+          "revenue": 320
+        },
+        {
+          "dish_id": "D009",
+          "dish_name": "Jeera Rice",
+          "quantity": 6,
+          "revenue": 600
+        },
+        {
+          "dish_id": "D002",
+          "dish_name": "Paneer Tikka",
+          "quantity": 4,
+          "revenue": 800
+        },
+        {
+          "dish_id": "D007",
+          "dish_name": "Chicken Biryani",
+          "quantity": 4,
+          "revenue": 1000
+        },
+        {
+          "dish_id": "D006",
+          "dish_name": "Raita",
+          "quantity": 2,
+          "revenue": 100
+        },
+        {
+          "dish_id": "D008",
+          "dish_name": "Palak Paneer",
+          "quantity": 1,
+          "revenue": 180
+        },
+        {
+          "dish_id": "D010",
+          "dish_name": "Tandoori Chicken",
+          "quantity": 1,
+          "revenue": 260
+        },
+        {
+          "dish_id": "D011",
+          "dish_name": "Chole",
+          "quantity": 1,
+          "revenue": 130
+        },
+        {
+          "dish_id": "D012",
+          "dish_name": "Matar Paneer",
+          "quantity": 1,
+          "revenue": 170
+        },
+        {
+          "dish_id": "D013",
+          "dish_name": "Gulab Jamun",
+          "quantity": 1,
+          "revenue": 60
+        },
+        {
+          "dish_id": "D014",
+          "dish_name": "Masala Chai",
+          "quantity": 1,
+          "revenue": 30
+        }
+      ],
+      "total_revenue": 8630
+    },
+    {
+      "date": "2026-03-05",
+      "day_of_week": "Thursday",
+      "weather": "rainy",
+      "is_event": false,
+      "event_name": null,
+      "covers": 83,
+      "sales": [
+        {
+          "dish_id": "D005",
+          "dish_name": "Roti",
+          "quantity": 17,
+          "revenue": 340
+        },
+        {
+          "dish_id": "D003",
+          "dish_name": "Dal Makhani",
+          "quantity": 16,
+          "revenue": 2240
+        },
+        {
+          "dish_id": "D001",
+          "dish_name": "Butter Chicken",
+          "quantity": 12,
+          "revenue": 2700
+        },
+        {
+          "dish_id": "D004",
+          "dish_name": "Naan",
+          "quantity": 8,
+          "revenue": 320
+        },
+        {
+          "dish_id": "D009",
+          "dish_name": "Jeera Rice",
+          "quantity": 5,
+          "revenue": 500
+        },
+        {
+          "dish_id": "D002",
+          "dish_name": "Paneer Tikka",
+          "quantity": 4,
+          "revenue": 800
+        },
+        {
+          "dish_id": "D007",
+          "dish_name": "Chicken Biryani",
+          "quantity": 4,
+          "revenue": 1000
+        },
+        {
+          "dish_id": "D006",
+          "dish_name": "Raita",
+          "quantity": 1,
+          "revenue": 50
+        },
+        {
+          "dish_id": "D008",
+          "dish_name": "Palak Paneer",
+          "quantity": 1,
+          "revenue": 180
+        },
+        {
+          "dish_id": "D010",
+          "dish_name": "Tandoori Chicken",
+          "quantity": 1,
+          "revenue": 260
+        },
+        {
+          "dish_id": "D011",
+          "dish_name": "Chole",
+          "quantity": 1,
+          "revenue": 130
+        },
+        {
+          "dish_id": "D012",
+          "dish_name": "Matar Paneer",
+          "quantity": 1,
+          "revenue": 170
+        },
+        {
+          "dish_id": "D013",
+          "dish_name": "Gulab Jamun",
+          "quantity": 1,
+          "revenue": 60
+        },
+        {
+          "dish_id": "D014",
+          "dish_name": "Masala Chai",
+          "quantity": 1,
+          "revenue": 30
+        }
+      ],
+      "total_revenue": 8780
+    },
+    {
+      "date": "2026-03-06",
+      "day_of_week": "Friday",
+      "weather": "sunny",
+      "is_event": false,
+      "event_name": null,
+      "covers": 94,
+      "sales": [
+        {
+          "dish_id": "D005",
+          "dish_name": "Roti",
+          "quantity": 17,
+          "revenue": 340
+        },
+        {
+          "dish_id": "D003",
+          "dish_name": "Dal Makhani",
+          "quantity": 16,
+          "revenue": 2240
+        },
+        {
+          "dish_id": "D001",
+          "dish_name": "Butter Chicken",
+          "quantity": 12,
+          "revenue": 2700
+        },
+        {
+          "dish_id": "D004",
+          "dish_name": "Naan",
+          "quantity": 10,
+          "revenue": 400
+        },
+        {
+          "dish_id": "D009",
+          "dish_name": "Jeera Rice",
+          "quantity": 7,
+          "revenue": 700
+        },
+        {
+          "dish_id": "D002",
+          "dish_name": "Paneer Tikka",
+          "quantity": 5,
+          "revenue": 1000
+        },
+        {
+          "dish_id": "D007",
+          "dish_name": "Chicken Biryani",
+          "quantity": 3,
+          "revenue": 750
+        },
+        {
+          "dish_id": "D006",
+          "dish_name": "Raita",
+          "quantity": 2,
+          "revenue": 100
+        },
+        {
+          "dish_id": "D008",
+          "dish_name": "Palak Paneer",
+          "quantity": 1,
+          "revenue": 180
+        },
+        {
+          "dish_id": "D010",
+          "dish_name": "Tandoori Chicken",
+          "quantity": 1,
+          "revenue": 260
+        },
+        {
+          "dish_id": "D011",
+          "dish_name": "Chole",
+          "quantity": 1,
+          "revenue": 130
+        },
+        {
+          "dish_id": "D012",
+          "dish_name": "Matar Paneer",
+          "quantity": 1,
+          "revenue": 170
+        },
+        {
+          "dish_id": "D013",
+          "dish_name": "Gulab Jamun",
+          "quantity": 1,
+          "revenue": 60
+        },
+        {
+          "dish_id": "D014",
+          "dish_name": "Masala Chai",
+          "quantity": 1,
+          "revenue": 30
+        }
+      ],
+      "total_revenue": 9060
+    },
+    {
+      "date": "2026-03-07",
+      "day_of_week": "Saturday",
+      "weather": "sunny",
+      "is_event": false,
+      "event_name": null,
+      "covers": 120,
+      "sales": [
+        {
+          "dish_id": "D005",
+          "dish_name": "Roti",
+          "quantity": 24,
+          "revenue": 480
+        },
+        {
+          "dish_id": "D003",
+          "dish_name": "Dal Makhani",
+          "quantity": 23,
+          "revenue": 3220
+        },
+        {
+          "dish_id": "D001",
+          "dish_name": "Butter Chicken",
+          "quantity": 18,
+          "revenue": 4050
+        },
+        {
+          "dish_id": "D004",
+          "dish_name": "Naan",
+          "quantity": 12,
+          "revenue": 480
+        },
+        {
+          "dish_id": "D009",
+          "dish_name": "Jeera Rice",
+          "quantity": 9,
+          "revenue": 900
+        },
+        {
+          "dish_id": "D002",
+          "dish_name": "Paneer Tikka",
+          "quantity": 6,
+          "revenue": 1200
+        },
+        {
+          "dish_id": "D007",
+          "dish_name": "Chicken Biryani",
+          "quantity": 6,
+          "revenue": 1500
+        },
+        {
+          "dish_id": "D006",
+          "dish_name": "Raita",
+          "quantity": 4,
+          "revenue": 200
+        },
+        {
+          "dish_id": "D008",
+          "dish_name": "Palak Paneer",
+          "quantity": 1,
+          "revenue": 180
+        },
+        {
+          "dish_id": "D010",
+          "dish_name": "Tandoori Chicken",
+          "quantity": 1,
+          "revenue": 260
+        },
+        {
+          "dish_id": "D011",
+          "dish_name": "Chole",
+          "quantity": 1,
+          "revenue": 130
+        },
+        {
+          "dish_id": "D012",
+          "dish_name": "Matar Paneer",
+          "quantity": 2,
+          "revenue": 340
+        },
+        {
+          "dish_id": "D013",
+          "dish_name": "Gulab Jamun",
+          "quantity": 1,
+          "revenue": 60
+        },
+        {
+          "dish_id": "D014",
+          "dish_name": "Masala Chai",
+          "quantity": 2,
+          "revenue": 60
+        }
+      ],
+      "total_revenue": 13060
+    },
+    {
+      "date": "2026-03-08",
+      "day_of_week": "Sunday",
+      "weather": "sunny",
+      "is_event": false,
+      "event_name": null,
+      "covers": 121,
+      "sales": [
+        {
+          "dish_id": "D005",
+          "dish_name": "Roti",
+          "quantity": 22,
+          "revenue": 440
+        },
+        {
+          "dish_id": "D003",
+          "dish_name": "Dal Makhani",
+          "quantity": 21,
+          "revenue": 2940
+        },
+        {
+          "dish_id": "D001",
+          "dish_name": "Butter Chicken",
+          "quantity": 17,
+          "revenue": 3825
+        },
+        {
+          "dish_id": "D004",
+          "dish_name": "Naan",
+          "quantity": 13,
+          "revenue": 520
+        },
+        {
+          "dish_id": "D009",
+          "dish_name": "Jeera Rice",
+          "quantity": 9,
+          "revenue": 900
+        },
+        {
+          "dish_id": "D002",
+          "dish_name": "Paneer Tikka",
+          "quantity": 7,
+          "revenue": 1400
+        },
+        {
+          "dish_id": "D007",
+          "dish_name": "Chicken Biryani",
+          "quantity": 5,
+          "revenue": 1250
+        },
+        {
+          "dish_id": "D006",
+          "dish_name": "Raita",
+          "quantity": 3,
+          "revenue": 150
+        },
+        {
+          "dish_id": "D008",
+          "dish_name": "Palak Paneer",
+          "quantity": 1,
+          "revenue": 180
+        },
+        {
+          "dish_id": "D010",
+          "dish_name": "Tandoori Chicken",
+          "quantity": 1,
+          "revenue": 260
+        },
+        {
+          "dish_id": "D011",
+          "dish_name": "Chole",
+          "quantity": 2,
+          "revenue": 260
+        },
+        {
+          "dish_id": "D012",
+          "dish_name": "Matar Paneer",
+          "quantity": 2,
+          "revenue": 340
+        },
+        {
+          "dish_id": "D013",
+          "dish_name": "Gulab Jamun",
+          "quantity": 1,
+          "revenue": 60
+        },
+        {
+          "dish_id": "D014",
+          "dish_name": "Masala Chai",
+          "quantity": 2,
+          "revenue": 60
+        }
+      ],
+      "total_revenue": 12585
+    },
+    {
+      "date": "2026-03-09",
+      "day_of_week": "Monday",
+      "weather": "sunny",
+      "is_event": false,
+      "event_name": null,
+      "covers": 93,
+      "sales": [
+        {
+          "dish_id": "D005",
+          "dish_name": "Roti",
+          "quantity": 18,
+          "revenue": 360
+        },
+        {
+          "dish_id": "D003",
+          "dish_name": "Dal Makhani",
+          "quantity": 14,
+          "revenue": 1960
+        },
+        {
+          "dish_id": "D001",
+          "dish_name": "Butter Chicken",
+          "quantity": 14,
+          "revenue": 3150
+        },
+        {
+          "dish_id": "D004",
+          "dish_name": "Naan",
+          "quantity": 11,
+          "revenue": 440
+        },
+        {
+          "dish_id": "D009",
+          "dish_name": "Jeera Rice",
+          "quantity": 6,
+          "revenue": 600
+        },
+        {
+          "dish_id": "D002",
+          "dish_name": "Paneer Tikka",
+          "quantity": 4,
+          "revenue": 800
+        },
+        {
+          "dish_id": "D007",
+          "dish_name": "Chicken Biryani",
+          "quantity": 3,
+          "revenue": 750
+        },
+        {
+          "dish_id": "D006",
+          "dish_name": "Raita",
+          "quantity": 3,
+          "revenue": 150
+        },
+        {
+          "dish_id": "D008",
+          "dish_name": "Palak Paneer",
+          "quantity": 1,
+          "revenue": 180
+        },
+        {
+          "dish_id": "D010",
+          "dish_name": "Tandoori Chicken",
+          "quantity": 1,
+          "revenue": 260
+        },
+        {
+          "dish_id": "D011",
+          "dish_name": "Chole",
+          "quantity": 1,
+          "revenue": 130
+        },
+        {
+          "dish_id": "D012",
+          "dish_name": "Matar Paneer",
+          "quantity": 1,
+          "revenue": 170
+        },
+        {
+          "dish_id": "D013",
+          "dish_name": "Gulab Jamun",
+          "quantity": 1,
+          "revenue": 60
+        },
+        {
+          "dish_id": "D014",
+          "dish_name": "Masala Chai",
+          "quantity": 1,
+          "revenue": 30
+        }
+      ],
+      "total_revenue": 9040
+    },
+    {
+      "date": "2026-03-10",
+      "day_of_week": "Tuesday",
+      "weather": "sunny",
+      "is_event": false,
+      "event_name": null,
+      "covers": 91,
+      "sales": [
+        {
+          "dish_id": "D005",
+          "dish_name": "Roti",
+          "quantity": 16,
+          "revenue": 320
+        },
+        {
+          "dish_id": "D003",
+          "dish_name": "Dal Makhani",
+          "quantity": 15,
+          "revenue": 2100
+        },
+        {
+          "dish_id": "D001",
+          "dish_name": "Butter Chicken",
+          "quantity": 11,
+          "revenue": 2475
+        },
+        {
+          "dish_id": "D004",
+          "dish_name": "Naan",
+          "quantity": 10,
+          "revenue": 400
+        },
+        {
+          "dish_id": "D009",
+          "dish_name": "Jeera Rice",
+          "quantity": 7,
+          "revenue": 700
+        },
+        {
+          "dish_id": "D002",
+          "dish_name": "Paneer Tikka",
+          "quantity": 4,
+          "revenue": 800
+        },
+        {
+          "dish_id": "D007",
+          "dish_name": "Chicken Biryani",
+          "quantity": 4,
+          "revenue": 1000
+        },
+        {
+          "dish_id": "D006",
+          "dish_name": "Raita",
+          "quantity": 2,
+          "revenue": 100
+        },
+        {
+          "dish_id": "D008",
+          "dish_name": "Palak Paneer",
+          "quantity": 1,
+          "revenue": 180
+        },
+        {
+          "dish_id": "D010",
+          "dish_name": "Tandoori Chicken",
+          "quantity": 1,
+          "revenue": 260
+        },
+        {
+          "dish_id": "D011",
+          "dish_name": "Chole",
+          "quantity": 1,
+          "revenue": 130
+        },
+        {
+          "dish_id": "D012",
+          "dish_name": "Matar Paneer",
+          "quantity": 1,
+          "revenue": 170
+        },
+        {
+          "dish_id": "D013",
+          "dish_name": "Gulab Jamun",
+          "quantity": 1,
+          "revenue": 60
+        },
+        {
+          "dish_id": "D014",
+          "dish_name": "Masala Chai",
+          "quantity": 1,
+          "revenue": 30
+        }
+      ],
+      "total_revenue": 8725
+    },
+    {
+      "date": "2026-03-11",
+      "day_of_week": "Wednesday",
+      "weather": "sunny",
+      "is_event": false,
+      "event_name": null,
+      "covers": 90,
+      "sales": [
+        {
+          "dish_id": "D005",
+          "dish_name": "Roti",
+          "quantity": 19,
+          "revenue": 380
+        },
+        {
+          "dish_id": "D003",
+          "dish_name": "Dal Makhani",
+          "quantity": 15,
+          "revenue": 2100
+        },
+        {
+          "dish_id": "D001",
+          "dish_name": "Butter Chicken",
+          "quantity": 13,
+          "revenue": 2925
+        },
+        {
+          "dish_id": "D004",
+          "dish_name": "Naan",
+          "quantity": 10,
+          "revenue": 400
+        },
+        {
+          "dish_id": "D009",
+          "dish_name": "Jeera Rice",
+          "quantity": 6,
+          "revenue": 600
+        },
+        {
+          "dish_id": "D002",
+          "dish_name": "Paneer Tikka",
+          "quantity": 4,
+          "revenue": 800
+        },
+        {
+          "dish_id": "D007",
+          "dish_name": "Chicken Biryani",
+          "quantity": 4,
+          "revenue": 1000
+        },
+        {
+          "dish_id": "D006",
+          "dish_name": "Raita",
+          "quantity": 2,
+          "revenue": 100
+        },
+        {
+          "dish_id": "D008",
+          "dish_name": "Palak Paneer",
+          "quantity": 1,
+          "revenue": 180
+        },
+        {
+          "dish_id": "D010",
+          "dish_name": "Tandoori Chicken",
+          "quantity": 1,
+          "revenue": 260
+        },
+        {
+          "dish_id": "D011",
+          "dish_name": "Chole",
+          "quantity": 1,
+          "revenue": 130
+        },
+        {
+          "dish_id": "D012",
+          "dish_name": "Matar Paneer",
+          "quantity": 1,
+          "revenue": 170
+        },
+        {
+          "dish_id": "D013",
+          "dish_name": "Gulab Jamun",
+          "quantity": 1,
+          "revenue": 60
+        },
+        {
+          "dish_id": "D014",
+          "dish_name": "Masala Chai",
+          "quantity": 1,
+          "revenue": 30
+        }
+      ],
+      "total_revenue": 9135
+    },
+    {
+      "date": "2026-03-12",
+      "day_of_week": "Thursday",
+      "weather": "rainy",
+      "is_event": false,
+      "event_name": null,
+      "covers": 87,
+      "sales": [
+        {
+          "dish_id": "D005",
+          "dish_name": "Roti",
+          "quantity": 16,
+          "revenue": 320
+        },
+        {
+          "dish_id": "D003",
+          "dish_name": "Dal Makhani",
+          "quantity": 17,
+          "revenue": 2380
+        },
+        {
+          "dish_id": "D001",
+          "dish_name": "Butter Chicken",
+          "quantity": 12,
+          "revenue": 2700
+        },
+        {
+          "dish_id": "D004",
+          "dish_name": "Naan",
+          "quantity": 9,
+          "revenue": 360
+        },
+        {
+          "dish_id": "D009",
+          "dish_name": "Jeera Rice",
+          "quantity": 5,
+          "revenue": 500
+        },
+        {
+          "dish_id": "D002",
+          "dish_name": "Paneer Tikka",
+          "quantity": 5,
+          "revenue": 1000
+        },
+        {
+          "dish_id": "D007",
+          "dish_name": "Chicken Biryani",
+          "quantity": 3,
+          "revenue": 750
+        },
+        {
+          "dish_id": "D006",
+          "dish_name": "Raita",
+          "quantity": 2,
+          "revenue": 100
+        },
+        {
+          "dish_id": "D008",
+          "dish_name": "Palak Paneer",
+          "quantity": 1,
+          "revenue": 180
+        },
+        {
+          "dish_id": "D010",
+          "dish_name": "Tandoori Chicken",
+          "quantity": 1,
+          "revenue": 260
+        },
+        {
+          "dish_id": "D011",
+          "dish_name": "Chole",
+          "quantity": 1,
+          "revenue": 130
+        },
+        {
+          "dish_id": "D012",
+          "dish_name": "Matar Paneer",
+          "quantity": 1,
+          "revenue": 170
+        },
+        {
+          "dish_id": "D013",
+          "dish_name": "Gulab Jamun",
+          "quantity": 1,
+          "revenue": 60
+        },
+        {
+          "dish_id": "D014",
+          "dish_name": "Masala Chai",
+          "quantity": 1,
+          "revenue": 30
+        }
+      ],
+      "total_revenue": 8940
+    },
+    {
+      "date": "2026-03-13",
+      "day_of_week": "Friday",
+      "weather": "sunny",
+      "is_event": false,
+      "event_name": null,
+      "covers": 88,
+      "sales": [
+        {
+          "dish_id": "D005",
+          "dish_name": "Roti",
+          "quantity": 15,
+          "revenue": 300
+        },
+        {
+          "dish_id": "D003",
+          "dish_name": "Dal Makhani",
+          "quantity": 15,
+          "revenue": 2100
+        },
+        {
+          "dish_id": "D001",
+          "dish_name": "Butter Chicken",
+          "quantity": 12,
+          "revenue": 2700
+        },
+        {
+          "dish_id": "D004",
+          "dish_name": "Naan",
+          "quantity": 10,
+          "revenue": 400
+        },
+        {
+          "dish_id": "D009",
+          "dish_name": "Jeera Rice",
+          "quantity": 6,
+          "revenue": 600
+        },
+        {
+          "dish_id": "D002",
+          "dish_name": "Paneer Tikka",
+          "quantity": 5,
+          "revenue": 1000
+        },
+        {
+          "dish_id": "D007",
+          "dish_name": "Chicken Biryani",
+          "quantity": 3,
+          "revenue": 750
+        },
+        {
+          "dish_id": "D006",
+          "dish_name": "Raita",
+          "quantity": 3,
+          "revenue": 150
+        },
+        {
+          "dish_id": "D008",
+          "dish_name": "Palak Paneer",
+          "quantity": 1,
+          "revenue": 180
+        },
+        {
+          "dish_id": "D010",
+          "dish_name": "Tandoori Chicken",
+          "quantity": 1,
+          "revenue": 260
+        },
+        {
+          "dish_id": "D011",
+          "dish_name": "Chole",
+          "quantity": 1,
+          "revenue": 130
+        },
+        {
+          "dish_id": "D012",
+          "dish_name": "Matar Paneer",
+          "quantity": 1,
+          "revenue": 170
+        },
+        {
+          "dish_id": "D013",
+          "dish_name": "Gulab Jamun",
+          "quantity": 1,
+          "revenue": 60
+        },
+        {
+          "dish_id": "D014",
+          "dish_name": "Masala Chai",
+          "quantity": 1,
+          "revenue": 30
+        }
+      ],
+      "total_revenue": 8830
+    },
+    {
+      "date": "2026-03-14",
+      "day_of_week": "Saturday",
+      "weather": "sunny",
+      "is_event": false,
+      "event_name": null,
+      "covers": 116,
+      "sales": [
+        {
+          "dish_id": "D005",
+          "dish_name": "Roti",
+          "quantity": 22,
+          "revenue": 440
+        },
+        {
+          "dish_id": "D003",
+          "dish_name": "Dal Makhani",
+          "quantity": 18,
+          "revenue": 2520
+        },
+        {
+          "dish_id": "D001",
+          "dish_name": "Butter Chicken",
+          "quantity": 17,
+          "revenue": 3825
+        },
+        {
+          "dish_id": "D004",
+          "dish_name": "Naan",
+          "quantity": 12,
+          "revenue": 480
+        },
+        {
+          "dish_id": "D009",
+          "dish_name": "Jeera Rice",
+          "quantity": 8,
+          "revenue": 800
+        },
+        {
+          "dish_id": "D002",
+          "dish_name": "Paneer Tikka",
+          "quantity": 6,
+          "revenue": 1200
+        },
+        {
+          "dish_id": "D007",
+          "dish_name": "Chicken Biryani",
+          "quantity": 5,
+          "revenue": 1250
+        },
+        {
+          "dish_id": "D006",
+          "dish_name": "Raita",
+          "quantity": 3,
+          "revenue": 150
+        },
+        {
+          "dish_id": "D008",
+          "dish_name": "Palak Paneer",
+          "quantity": 1,
+          "revenue": 180
+        },
+        {
+          "dish_id": "D010",
+          "dish_name": "Tandoori Chicken",
+          "quantity": 1,
+          "revenue": 260
+        },
+        {
+          "dish_id": "D011",
+          "dish_name": "Chole",
+          "quantity": 1,
+          "revenue": 130
+        },
+        {
+          "dish_id": "D012",
+          "dish_name": "Matar Paneer",
+          "quantity": 1,
+          "revenue": 170
+        },
+        {
+          "dish_id": "D013",
+          "dish_name": "Gulab Jamun",
+          "quantity": 1,
+          "revenue": 60
+        },
+        {
+          "dish_id": "D014",
+          "dish_name": "Masala Chai",
+          "quantity": 1,
+          "revenue": 30
+        }
+      ],
+      "total_revenue": 11495
+    },
+    {
+      "date": "2026-03-15",
+      "day_of_week": "Sunday",
+      "weather": "sunny",
+      "is_event": true,
+      "event_name": "Holi",
+      "covers": 198,
+      "sales": [
+        {
+          "dish_id": "D005",
+          "dish_name": "Roti",
+          "quantity": 40,
+          "revenue": 800
+        },
+        {
+          "dish_id": "D003",
+          "dish_name": "Dal Makhani",
+          "quantity": 37,
+          "revenue": 5180
+        },
+        {
+          "dish_id": "D001",
+          "dish_name": "Butter Chicken",
+          "quantity": 29,
+          "revenue": 6525
+        },
+        {
+          "dish_id": "D004",
+          "dish_name": "Naan",
+          "quantity": 22,
+          "revenue": 880
+        },
+        {
+          "dish_id": "D009",
+          "dish_name": "Jeera Rice",
+          "quantity": 15,
+          "revenue": 1500
+        },
+        {
+          "dish_id": "D002",
+          "dish_name": "Paneer Tikka",
+          "quantity": 9,
+          "revenue": 1800
+        },
+        {
+          "dish_id": "D007",
+          "dish_name": "Chicken Biryani",
+          "quantity": 8,
+          "revenue": 2000
+        },
+        {
+          "dish_id": "D006",
+          "dish_name": "Raita",
+          "quantity": 6,
+          "revenue": 300
+        },
+        {
+          "dish_id": "D008",
+          "dish_name": "Palak Paneer",
+          "quantity": 3,
+          "revenue": 540
+        },
+        {
+          "dish_id": "D010",
+          "dish_name": "Tandoori Chicken",
+          "quantity": 3,
+          "revenue": 780
+        },
+        {
+          "dish_id": "D011",
+          "dish_name": "Chole",
+          "quantity": 2,
+          "revenue": 260
+        },
+        {
+          "dish_id": "D012",
+          "dish_name": "Matar Paneer",
+          "quantity": 2,
+          "revenue": 340
+        },
+        {
+          "dish_id": "D013",
+          "dish_name": "Gulab Jamun",
+          "quantity": 2,
+          "revenue": 120
+        },
+        {
+          "dish_id": "D014",
+          "dish_name": "Masala Chai",
+          "quantity": 2,
+          "revenue": 60
+        }
+      ],
+      "total_revenue": 21085
+    },
+    {
+      "date": "2026-03-16",
+      "day_of_week": "Monday",
+      "weather": "sunny",
+      "is_event": false,
+      "event_name": null,
+      "covers": 85,
+      "sales": [
+        {
+          "dish_id": "D005",
+          "dish_name": "Roti",
+          "quantity": 17,
+          "revenue": 340
+        },
+        {
+          "dish_id": "D003",
+          "dish_name": "Dal Makhani",
+          "quantity": 14,
+          "revenue": 1960
+        },
+        {
+          "dish_id": "D001",
+          "dish_name": "Butter Chicken",
+          "quantity": 12,
+          "revenue": 2700
+        },
+        {
+          "dish_id": "D004",
+          "dish_name": "Naan",
+          "quantity": 10,
+          "revenue": 400
+        },
+        {
+          "dish_id": "D009",
+          "dish_name": "Jeera Rice",
+          "quantity": 5,
+          "revenue": 500
+        },
+        {
+          "dish_id": "D002",
+          "dish_name": "Paneer Tikka",
+          "quantity": 5,
+          "revenue": 1000
+        },
+        {
+          "dish_id": "D007",
+          "dish_name": "Chicken Biryani",
+          "quantity": 3,
+          "revenue": 750
+        },
+        {
+          "dish_id": "D006",
+          "dish_name": "Raita",
+          "quantity": 2,
+          "revenue": 100
+        },
+        {
+          "dish_id": "D008",
+          "dish_name": "Palak Paneer",
+          "quantity": 1,
+          "revenue": 180
+        },
+        {
+          "dish_id": "D010",
+          "dish_name": "Tandoori Chicken",
+          "quantity": 1,
+          "revenue": 260
+        },
+        {
+          "dish_id": "D011",
+          "dish_name": "Chole",
+          "quantity": 1,
+          "revenue": 130
+        },
+        {
+          "dish_id": "D012",
+          "dish_name": "Matar Paneer",
+          "quantity": 1,
+          "revenue": 170
+        },
+        {
+          "dish_id": "D013",
+          "dish_name": "Gulab Jamun",
+          "quantity": 1,
+          "revenue": 60
+        },
+        {
+          "dish_id": "D014",
+          "dish_name": "Masala Chai",
+          "quantity": 1,
+          "revenue": 30
+        }
+      ],
+      "total_revenue": 8580
+    },
+    {
+      "date": "2026-03-17",
+      "day_of_week": "Tuesday",
+      "weather": "sunny",
+      "is_event": false,
+      "event_name": null,
+      "covers": 94,
+      "sales": [
+        {
+          "dish_id": "D005",
+          "dish_name": "Roti",
+          "quantity": 17,
+          "revenue": 340
+        },
+        {
+          "dish_id": "D003",
+          "dish_name": "Dal Makhani",
+          "quantity": 16,
+          "revenue": 2240
+        },
+        {
+          "dish_id": "D001",
+          "dish_name": "Butter Chicken",
+          "quantity": 13,
+          "revenue": 2925
+        },
+        {
+          "dish_id": "D004",
+          "dish_name": "Naan",
+          "quantity": 11,
+          "revenue": 440
+        },
+        {
+          "dish_id": "D009",
+          "dish_name": "Jeera Rice",
+          "quantity": 6,
+          "revenue": 600
+        },
+        {
+          "dish_id": "D002",
+          "dish_name": "Paneer Tikka",
+          "quantity": 4,
+          "revenue": 800
+        },
+        {
+          "dish_id": "D007",
+          "dish_name": "Chicken Biryani",
+          "quantity": 4,
+          "revenue": 1000
+        },
+        {
+          "dish_id": "D006",
+          "dish_name": "Raita",
+          "quantity": 2,
+          "revenue": 100
+        },
+        {
+          "dish_id": "D008",
+          "dish_name": "Palak Paneer",
+          "quantity": 1,
+          "revenue": 180
+        },
+        {
+          "dish_id": "D010",
+          "dish_name": "Tandoori Chicken",
+          "quantity": 1,
+          "revenue": 260
+        },
+        {
+          "dish_id": "D011",
+          "dish_name": "Chole",
+          "quantity": 1,
+          "revenue": 130
+        },
+        {
+          "dish_id": "D012",
+          "dish_name": "Matar Paneer",
+          "quantity": 1,
+          "revenue": 170
+        },
+        {
+          "dish_id": "D013",
+          "dish_name": "Gulab Jamun",
+          "quantity": 1,
+          "revenue": 60
+        },
+        {
+          "dish_id": "D014",
+          "dish_name": "Masala Chai",
+          "quantity": 1,
+          "revenue": 30
+        }
+      ],
+      "total_revenue": 9275
+    },
+    {
+      "date": "2026-03-18",
+      "day_of_week": "Wednesday",
+      "weather": "sunny",
+      "is_event": false,
+      "event_name": null,
+      "covers": 94,
+      "sales": [
+        {
+          "dish_id": "D005",
+          "dish_name": "Roti",
+          "quantity": 16,
+          "revenue": 320
+        },
+        {
+          "dish_id": "D003",
+          "dish_name": "Dal Makhani",
+          "quantity": 15,
+          "revenue": 2100
+        },
+        {
+          "dish_id": "D001",
+          "dish_name": "Butter Chicken",
+          "quantity": 14,
+          "revenue": 3150
+        },
+        {
+          "dish_id": "D004",
+          "dish_name": "Naan",
+          "quantity": 10,
+          "revenue": 400
+        },
+        {
+          "dish_id": "D009",
+          "dish_name": "Jeera Rice",
+          "quantity": 7,
+          "revenue": 700
+        },
+        {
+          "dish_id": "D002",
+          "dish_name": "Paneer Tikka",
+          "quantity": 5,
+          "revenue": 1000
+        },
+        {
+          "dish_id": "D007",
+          "dish_name": "Chicken Biryani",
+          "quantity": 4,
+          "revenue": 1000
+        },
+        {
+          "dish_id": "D006",
+          "dish_name": "Raita",
+          "quantity": 3,
+          "revenue": 150
+        },
+        {
+          "dish_id": "D008",
+          "dish_name": "Palak Paneer",
+          "quantity": 1,
+          "revenue": 180
+        },
+        {
+          "dish_id": "D010",
+          "dish_name": "Tandoori Chicken",
+          "quantity": 1,
+          "revenue": 260
+        },
+        {
+          "dish_id": "D011",
+          "dish_name": "Chole",
+          "quantity": 1,
+          "revenue": 130
+        },
+        {
+          "dish_id": "D012",
+          "dish_name": "Matar Paneer",
+          "quantity": 1,
+          "revenue": 170
+        },
+        {
+          "dish_id": "D013",
+          "dish_name": "Gulab Jamun",
+          "quantity": 1,
+          "revenue": 60
+        },
+        {
+          "dish_id": "D014",
+          "dish_name": "Masala Chai",
+          "quantity": 1,
+          "revenue": 30
+        }
+      ],
+      "total_revenue": 9650
+    }
+  ]
+}

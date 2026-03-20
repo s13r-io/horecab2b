@@ -1,0 +1,164 @@
+{
+  "ingredients": [
+    {
+      "sku": "tomato",
+      "name": "Tomatoes (Fresh)",
+      "unit": "kg",
+      "category": "Vegetables",
+      "shelf_life_days": 5,
+      "perishable": true
+    },
+    {
+      "sku": "onion",
+      "name": "Onions",
+      "unit": "kg",
+      "category": "Vegetables",
+      "shelf_life_days": 15,
+      "perishable": false
+    },
+    {
+      "sku": "chicken_breast",
+      "name": "Chicken Breast (Fresh)",
+      "unit": "kg",
+      "category": "Meat",
+      "shelf_life_days": 2,
+      "perishable": true
+    },
+    {
+      "sku": "paneer",
+      "name": "Paneer",
+      "unit": "kg",
+      "category": "Dairy",
+      "shelf_life_days": 7,
+      "perishable": true
+    },
+    {
+      "sku": "butter",
+      "name": "Butter (Unsalted)",
+      "unit": "kg",
+      "category": "Dairy",
+      "shelf_life_days": 30,
+      "perishable": false
+    },
+    {
+      "sku": "cream",
+      "name": "Cream (Fresh)",
+      "unit": "kg",
+      "category": "Dairy",
+      "shelf_life_days": 5,
+      "perishable": true
+    },
+    {
+      "sku": "black_lentils",
+      "name": "Black Lentils (Urad)",
+      "unit": "kg",
+      "category": "Dry Goods",
+      "shelf_life_days": 180,
+      "perishable": false
+    },
+    {
+      "sku": "red_lentils",
+      "name": "Red Lentils (Masoor)",
+      "unit": "kg",
+      "category": "Dry Goods",
+      "shelf_life_days": 180,
+      "perishable": false
+    },
+    {
+      "sku": "ginger_garlic",
+      "name": "Ginger-Garlic Paste",
+      "unit": "kg",
+      "category": "Condiments",
+      "shelf_life_days": 10,
+      "perishable": true
+    },
+    {
+      "sku": "yogurt",
+      "name": "Yogurt (Plain)",
+      "unit": "kg",
+      "category": "Dairy",
+      "shelf_life_days": 3,
+      "perishable": true
+    },
+    {
+      "sku": "wheat_flour",
+      "name": "Wheat Flour (Atta)",
+      "unit": "kg",
+      "category": "Dry Goods",
+      "shelf_life_days": 90,
+      "perishable": false
+    },
+    {
+      "sku": "rice_basmati",
+      "name": "Basmati Rice",
+      "unit": "kg",
+      "category": "Dry Goods",
+      "shelf_life_days": 180,
+      "perishable": false
+    },
+    {
+      "sku": "cooking_oil",
+      "name": "Cooking Oil (Sunflower)",
+      "unit": "litre",
+      "category": "Dry Goods",
+      "shelf_life_days": 120,
+      "perishable": false
+    },
+    {
+      "sku": "salt",
+      "name": "Salt (Iodized)",
+      "unit": "kg",
+      "category": "Dry Goods",
+      "shelf_life_days": 365,
+      "perishable": false
+    },
+    {
+      "sku": "cumin_powder",
+      "name": "Cumin Powder",
+      "unit": "kg",
+      "category": "Spices",
+      "shelf_life_days": 180,
+      "perishable": false
+    },
+    {
+      "sku": "turmeric_powder",
+      "name": "Turmeric Powder",
+      "unit": "kg",
+      "category": "Spices",
+      "shelf_life_days": 180,
+      "perishable": false
+    },
+    {
+      "sku": "red_chili_powder",
+      "name": "Red Chili Powder",
+      "unit": "kg",
+      "category": "Spices",
+      "shelf_life_days": 180,
+      "perishable": false
+    },
+    {
+      "sku": "garam_masala",
+      "name": "Garam Masala",
+      "unit": "kg",
+      "category": "Spices",
+      "shelf_life_days": 120,
+      "perishable": false
+    },
+    {
+      "sku": "coriander_leaves",
+      "name": "Coriander Leaves (Fresh)",
+      "unit": "kg",
+      "category": "Vegetables",
+      "shelf_life_days": 3,
+      "perishable": true
+    },
+    {
+      "sku": "green_chili",
+      "name": "Green Chili",
+      "unit": "kg",
+      "category": "Vegetables",
+      "shelf_life_days": 5,
+      "perishable": true
+    }
+  ]
+}
