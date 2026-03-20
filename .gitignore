@@ -40,3 +40,6 @@ __pycache__/
 coverage/
 *.tmp
 *.temp
+
+# Internal plans
+plans/
