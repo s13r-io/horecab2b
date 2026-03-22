@@ -348,34 +348,61 @@ def _build_general_query_system_prompt() -> str:
         inventory_lines.append(f"  - {ing['name']} ({ing['sku']}): {qty} {ing['unit']} on hand")
     inventory_text = "\n".join(inventory_lines)
 
-    # Build menu summary
-    recipes = get_all_recipes()
-    menu_lines = []
-    for r in recipes:
-        ing_names = ", ".join(i["sku"] for i in r["ingredients"])
-        menu_lines.append(f"  - {r['dish_name']}: uses {ing_names}")
-    menu_text = "\n".join(menu_lines)
+    # Build forecasted quantity lookup with target stock
+    from agents.forecasting import forecast_ingredient
+    from utils.data_loader import get_demo_config
+    config = get_demo_config()
+    target_date = config["current_date"]
 
-    return f"""You are the procurement assistant for {profile.get('name', 'this restaurant')}, a {profile.get('cuisine', '')} restaurant in {profile.get('location', '')}.
-You serve ~{profile.get('avg_daily_covers', 100)} covers/day.
+    # Create a lookup dict for quick access to forecast quantities
+    forecast_data = {}
+    for ing in ingredients:
+        forecast = forecast_ingredient(ing["sku"], target_date)
+        # Extract target_stock from reasoning (format: "Target stock: XXkg.")
+        target_stock = None
+        if "Target stock:" in forecast.reasoning:
+            parts = forecast.reasoning.split("Target stock:")
+            if len(parts) > 1:
+                stock_str = parts[1].split("kg")[0].strip()
+                try:
+                    target_stock = float(stock_str)
+                except:
+                    pass
 
-IMPORTANT: You must ONLY answer questions related to this restaurant's procurement, inventory, menu, and ingredients. If a question is outside this domain, politely redirect the user to ask about procurement topics.
+        forecast_data[ing["name"].lower()] = {
+            "order_quantity": forecast.forecast_quantity,  # Delta: what to ORDER
+            "target_stock": target_stock,  # Total inventory needed
+            "current_on_hand": get_current_inventory(ing["sku"]),
+            "unit": ing["unit"],
+            "sku": ing["sku"]
+        }
 
-When the user asks about an ingredient, ALWAYS check the inventory and menu data below to give a specific, data-driven answer.
+    return f"""You are the procurement assistant for {profile.get('name', 'this restaurant')}.
 
-Current Inventory:
+KEY CONCEPT:
+- "Order quantity" = what to ORDER (accounts for existing inventory)
+- "Target stock" = total inventory you should have (after delivery)
+- Example: Have 8kg, target is 19.4kg → order 11.4kg to reach target
+
+RESPONSE RULES:
+1. ONLY answer the exact question asked
+2. No extra context, dishes, patterns, or reasoning
+3. Keep to 1-2 sentences max
+4. Always include quantities and units
+5. Clarify what numbers mean (order vs target stock)
+
+Current Inventory (on hand):
 {inventory_text}
 
-Menu (dishes and their ingredients):
-{menu_text}
+Forecast Data (for today):
+{json.dumps(forecast_data, indent=2)}
 
-When asked "do I need X?" or similar:
-1. Check if X is in the inventory above
-2. Check which dishes use X
-3. Compare stock on hand vs expected daily usage
-4. Give a concrete answer based on the data
+RESPONSE TEMPLATES (follow exactly):
+- "How much [ing] on hand?" → "You have X on hand. Target stock is Y. Order Z to reach target."
+- "Do I need [ing]?" → "Yes, order X (brings total to Y)." or "No, on track."
+- "How much [ing] needed?" → "You need Y total stock (currently have X, order Z)."
 
-Keep responses concise and specific to this restaurant's data."""
+IMPORTANT: "Order quantity" is NOT additional to current stock—it's what to order to reach the target stock level."""
 
 
 def _handle_general_query(message: str, restaurant_id: str) -> ChatResponse:
@@ -389,7 +416,7 @@ def _handle_general_query(message: str, restaurant_id: str) -> ChatResponse:
     try:
         response = _client.messages.create(
             model="claude-sonnet-4-20250514",
-            max_tokens=300,
+            max_tokens=150,
             system=_build_general_query_system_prompt(),
             messages=history
         )
@@ -503,6 +530,7 @@ def _handle_place_order(intent, restaurant_id: str) -> ChatResponse:
             # Single ingredient context
             qty = intent.quantity
             if qty is None:
+                # No quantity specified - use forecast
                 forecast = forecast_ingredient(intent.ingredient, target_date)
                 qty = forecast.forecast_quantity
                 if qty <= 0:
@@ -512,7 +540,26 @@ def _handle_place_order(intent, restaurant_id: str) -> ChatResponse:
                     )
                 forecasts = [forecast]
             else:
-                forecasts = [forecast_ingredient(intent.ingredient, target_date)]
+                # User specified quantity - use it directly instead of forecast calculation
+                all_ingredients = get_all_ingredients()
+                ing = next((i for i in all_ingredients if i["sku"] == intent.ingredient or i["name"].lower() == intent.ingredient.lower()), None)
+                if not ing:
+                    return ChatResponse(
+                        response_text=f"❌ Unknown ingredient: {intent.ingredient}",
+                        action="query"
+                    )
+
+                # Create forecast with user-specified quantity
+                from models.schemas import IngredientForecast
+                forecast = IngredientForecast(
+                    sku=ing["sku"],
+                    ingredient_name=ing["name"],
+                    forecast_quantity=qty,  # Use user-specified quantity
+                    unit=ing["unit"],
+                    confidence=1.0,
+                    reasoning=f"User-specified order quantity: {qty} {ing['unit']}"
+                )
+                forecasts = [forecast]
         else:
             return ChatResponse(
                 response_text="What would you like to order? Say 'order the forecast' or specify an ingredient.",

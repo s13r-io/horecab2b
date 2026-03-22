@@ -51,15 +51,22 @@ Available ingredients: {ingredient_list}
 Available actions:
 - "low_stock": User reports insufficient inventory of an ingredient
 - "approve_suggestion": User approves a suggested order
-- "forecast_today": User wants to see today's demand forecast
+- "forecast_today": User explicitly asks to see TODAY'S FORECAST or ALL ITEMS (e.g., "show me the forecast", "what do I need today", "forecast all")
 - "price_check": User wants to compare prices for an ingredient
-- "place_order": User wants to place/create an order based on previous conversation (e.g., "place the order", "order it", "go ahead and order")
+- "place_order": User wants to place/create an order with a SPECIFIC QUANTITY (e.g., "order 5 kg of tomato", "place an order for five kilos")
 - "confirm_order": User confirms a proposed order (e.g., "yes", "confirm", "looks good") after seeing order details
-- "query": General question or chat
+- "query": General question about a SPECIFIC ingredient or chat (e.g., "how much do I have", "do I need X", "check my tomato stock")
 
-For "place_order": Examine the FULL conversation history. If forecast was discussed, set context to "forecast". If specific ingredient was discussed, extract ingredient and quantity.
+CRITICAL EXTRACTION RULES:
+For "place_order":
+- MUST extract the ingredient name (match against available ingredients list)
+- MUST extract the numeric quantity (e.g., "5", "five", "5.5", "2.2")
+- Look for patterns: "order X kg of [ingredient]", "buy X units of [ingredient]", "place an order for X [ingredient]"
+- Convert word numbers to digits: "five" → 5, "two and half" → 2.5
 
-For "confirm_order": Extract order_id if present in context.
+For "query":
+- User asking about ONE specific ingredient without placing an order
+- Examples: "how much do I have?", "do I need X?", "how much X do I need?"
 
 Response format (JSON only, no other text):
 {{
@@ -72,7 +79,7 @@ Response format (JSON only, no other text):
   "items": [list of items] or null
 }}
 
-Always respond with valid JSON only."""
+Always respond with valid JSON only. Quantity MUST be a number, not text."""
 
     try:
         response = _client.messages.create(
