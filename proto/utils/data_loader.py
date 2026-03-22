@@ -164,6 +164,34 @@ def get_current_inventory(sku: str) -> float:
     return 0.0
 
 
+def get_pending_order_quantity(sku: str, restaurant_id: str = "R001") -> float:
+    """Sum quantities of a SKU across all confirmed/queued orders (not yet dispatched)."""
+    import sqlite3
+    db_path = Path(__file__).parent.parent / "db" / "prototype.db"
+    try:
+        conn = sqlite3.connect(str(db_path))
+        cursor = conn.cursor()
+        cursor.execute(
+            "SELECT items FROM orders WHERE restaurant_id = ? AND status IN ('confirmed', 'queued')",
+            (restaurant_id,)
+        )
+        rows = cursor.fetchall()
+        conn.close()
+    except Exception:
+        return 0.0
+
+    total = 0.0
+    for (items_json,) in rows:
+        try:
+            items = json.loads(items_json)
+            for item in items:
+                if item.get("sku") == sku:
+                    total += item.get("quantity", 0.0)
+        except Exception:
+            pass
+    return total
+
+
 def get_ingredient_unit(sku: str) -> str:
     """Get unit for an ingredient."""
     ing_data = _load_ingredients()

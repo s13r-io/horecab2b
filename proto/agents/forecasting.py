@@ -13,6 +13,7 @@ from utils.data_loader import (
     get_recipes_using_ingredient,
     get_last_n_days_sales,
     get_current_inventory,
+    get_pending_order_quantity,
     get_ingredient_unit,
     get_demo_config,
     get_vendors_for_sku,
@@ -126,7 +127,9 @@ def forecast_ingredient(sku: str, target_date: str, num_days: int = 7) -> Ingred
     target_stock = adjusted_daily_need * coverage_days
 
     current_inv = get_current_inventory(sku)
-    final_qty = max(0.0, target_stock - current_inv)
+    pending_qty = get_pending_order_quantity(sku)
+    effective_inv = current_inv + pending_qty
+    final_qty = max(0.0, target_stock - effective_inv)
     final_qty = round(final_qty, 1)
 
     confidence = 0.85 if len(daily_quantities) >= 5 else 0.70
@@ -136,7 +139,8 @@ def forecast_ingredient(sku: str, target_date: str, num_days: int = 7) -> Ingred
         f"Lead time: {lead_time}d. Coverage: {coverage_days}d "
         f"({lead_time}d lead + {lead_time}d next cycle + 1d buffer). "
         f"Target stock: {target_stock:.1f}kg. "
-        f"Current inventory: {current_inv}kg."
+        f"On hand: {current_inv}kg. Pending orders: {pending_qty}kg. "
+        f"Effective inventory: {effective_inv}kg."
     )
 
     return IngredientForecast(
