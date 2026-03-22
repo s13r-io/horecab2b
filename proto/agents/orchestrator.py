@@ -653,6 +653,10 @@ def _handle_confirm_order(intent, restaurant_id: str) -> ChatResponse:
         conn.commit()
         conn.close()
 
+        # Clear chat history for this restaurant so Claude recalculates forecasts with updated pending orders
+        if restaurant_id in _chat_histories:
+            _chat_histories[restaurant_id] = []
+
         scheduled = row[1]
         return ChatResponse(
             response_text=f"✅ Order {order_id} is now queued!\n📅 Vendor messages will be sent at {scheduled}",
