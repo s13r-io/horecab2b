@@ -121,8 +121,9 @@ class ApproveRequest(BaseModel):
 
 
 class ApproveResponse(BaseModel):
-    status: str  # approved, dispatched, error
+    status: str  # queued, placed, error
     messages: List[VendorMessage]
+    scheduled_send_time: Optional[str] = None
     error: Optional[str] = None
 
 

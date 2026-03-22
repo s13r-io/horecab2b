@@ -90,13 +90,13 @@ def dispatch_order(order_id: str, vendor_assignments: List[VendorAssignment],
             duration_ms=0
         )
 
-    # Update order status to "dispatched" in database
+    # Update order status to "placed" in database
     try:
         conn = sqlite3.connect(db_path)
         cursor = conn.cursor()
         cursor.execute(
             "UPDATE orders SET status = ?, updated_at = ? WHERE order_id = ?",
-            ("dispatched", datetime.now().isoformat(), order_id)
+            ("placed", datetime.now().isoformat(), order_id)
         )
         conn.commit()
         conn.close()

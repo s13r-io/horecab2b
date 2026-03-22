@@ -198,6 +198,25 @@ def route_ingredient_with_split(
     preferred_moq = get_moq_for_vendor_sku(preferred.vendor_id, sku)
     main_qty = round(max(main_qty, preferred_moq), 1)
 
+    # If MOQ inflation causes total to exceed the requested quantity, fall back to
+    # single-vendor order at forecast_qty (respects user intent, avoids over-ordering)
+    if bridge_qty + main_qty > forecast_qty:
+        single_qty = round(max(forecast_qty, preferred_moq), 1)
+        single_options = route_ingredient(sku, single_qty, target_date)
+        single_opt = next(
+            (o for o in single_options if o.vendor_id == preferred.vendor_id), preferred
+        )
+        return {
+            "options": options,
+            "is_split": False,
+            "bridge": None,
+            "main": {"vendor_option": single_opt, "qty": single_qty},
+            "reason": (
+                f"Split MOQ inflation ({bridge_qty}+{main_qty}>{forecast_qty}); "
+                f"single order to {preferred.vendor_name}"
+            )
+        }
+
     # Re-price both at actual quantities
     bridge_options = route_ingredient(sku, bridge_qty, target_date)
     bridge_opt = next(

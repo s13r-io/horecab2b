@@ -253,10 +253,11 @@ body {
     margin-top: 1px;
 }
 
-.val-critical { color: #e53935; font-weight: 700; }
-.val-warning  { color: #fb8c00; font-weight: 700; }
-.val-ok       { color: #43a047; font-weight: 600; }
-.val-order    { color: #1565c0; font-weight: 700; }
+.val-critical  { color: #e53935; font-weight: 700; }
+.val-warning   { color: #fb8c00; font-weight: 700; }
+.val-ok        { color: #43a047; font-weight: 600; }
+.val-order     { color: #1565c0; font-weight: 700; }
+.val-pipeline  { color: #7d5a00; font-weight: 600; }
 
 .moq-note {
     font-size: 10px;
@@ -710,19 +711,19 @@ body::-webkit-scrollbar-thumb:hover {
 .order-card {
     background-color: white;
     border: 1px solid #ddd;
-    border-radius: 6px;
-    padding: 16px;
+    border-radius: 8px;
+    padding: 0;
     margin-bottom: 12px;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+    overflow: hidden;
 }
 
 .order-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 12px;
-    padding-bottom: 12px;
-    border-bottom: 1px solid #f0f0f0;
+    padding: 14px 16px;
+    border-bottom: 1px solid #eee;
 }
 
 .order-id {
@@ -739,18 +740,24 @@ body::-webkit-scrollbar-thumb:hover {
     text-transform: uppercase;
 }
 
+.status-suggested {
+    background-color: #9C27B0;
+    color: white;
+}
+
+
 .status-queued {
     background-color: #ffd700;
     color: #333;
 }
 
-.status-dispatched {
+.status-placed {
     background-color: #4CAF50;
     color: white;
 }
 
-.status-confirmed {
-    background-color: #2196F3;
+.status-received {
+    background-color: #1B5E20;
     color: white;
 }
 
@@ -759,44 +766,104 @@ body::-webkit-scrollbar-thumb:hover {
     color: white;
 }
 
-.status-suggested {
-    background-color: #9C27B0;
-    color: white;
+.order-meta {
+    font-size: 12px;
+    color: #888;
+    padding: 8px 16px;
+    border-bottom: 1px solid #f5f5f5;
+    background: #fafafa;
 }
 
-.order-body {
+.order-line-table {
+    width: 100%;
+    border-collapse: collapse;
     font-size: 13px;
+    margin-bottom: 0;
+}
+
+.order-line-table thead {
+    background: #f7f7f7;
+}
+
+.order-line-table th {
+    padding: 8px 16px;
+    text-align: left;
+    font-weight: 600;
+    color: #666;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+    border-bottom: 1px solid #e8e8e8;
+}
+
+.order-line-table th.num {
+    text-align: right;
+}
+
+.order-line-table td {
+    padding: 9px 16px;
+    color: #333;
+    border-top: 1px solid #f0f0f0;
+    font-size: 13px;
+}
+
+.order-line-table td.num {
+    text-align: right;
+    font-variant-numeric: tabular-nums;
+}
+
+.order-line-table tfoot td {
+    border-top: 2px solid #e0e0e0;
+    padding: 9px 16px;
+    background: #f7f7f7;
+}
+
+.total-label {
+    font-weight: 600;
     color: #555;
-    margin-bottom: 12px;
+    font-size: 12px;
+    text-align: right;
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
 }
 
-.order-items,
-.order-cost,
-.order-created {
-    margin-bottom: 8px;
+.total-value {
+    font-weight: 700;
+    color: #111;
+    font-size: 14px;
+    text-align: right;
+    font-variant-numeric: tabular-nums;
 }
 
-.order-items strong,
-.order-cost strong,
-.order-created strong {
-    color: #222;
+.bridge-tag {
+    display: inline-block;
+    font-size: 10px;
+    font-weight: 700;
+    background: #fff3e0;
+    color: #e65100;
+    border: 1px solid #ffcc80;
+    border-radius: 3px;
+    padding: 1px 5px;
+    margin-left: 5px;
+    vertical-align: middle;
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
 }
 
 .order-schedule {
-    margin-top: 8px;
-    padding: 8px;
-    background-color: #f9f9f9;
+    margin-top: 4px;
+    padding-left: 8px;
     border-left: 3px solid #075E54;
-    color: #222;
+    color: #333;
     font-weight: 500;
 }
 
 .order-actions {
     display: flex;
     gap: 8px;
-    margin-top: 12px;
-    padding-top: 12px;
-    border-top: 1px solid #f0f0f0;
+    padding: 12px 16px;
+    border-top: 1px solid #eee;
+    background: #fafafa;
 }
 
 .btn-action {
@@ -825,6 +892,15 @@ body::-webkit-scrollbar-thumb:hover {
 
 .btn-cancel:hover {
     background-color: #d32f2f;
+}
+
+.btn-receive {
+    background-color: #1B5E20;
+    color: white;
+}
+
+.btn-receive:hover {
+    background-color: #0d3d10;
 }
 
 .btn-send-now {

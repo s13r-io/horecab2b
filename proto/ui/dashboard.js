@@ -127,9 +127,14 @@ function renderInventory(data) {
                         '<span class="inv-stat-label">Earliest Delivery</span>' +
                     '</div>' +
                     '<div class="inv-stat">' +
+                        '<span class="inv-stat-value ' + (ing.in_pipeline_qty > 0 ? 'val-pipeline' : '') + '">' +
+                            (ing.in_pipeline_qty > 0 ? ing.in_pipeline_qty + ' ' + ing.unit : '--') +
+                        '</span>' +
+                        '<span class="inv-stat-label">In Pipeline</span>' +
+                    '</div>' +
+                    '<div class="inv-stat">' +
                         '<span class="inv-stat-value ' + (ing.forecast_order > 0 ? 'val-order' : '') + '">' +
                             (ing.forecast_order > 0 ? ing.forecast_order + ' ' + ing.unit : '--') +
-                            (ing.moq_applied ? '<br><span class="moq-note">MOQ: ' + ing.moq + ' ' + ing.unit + '</span>' : '') +
                         '</span>' +
                         '<span class="inv-stat-label">Order Qty</span>' +
                     '</div>' +
@@ -388,38 +393,104 @@ function renderOrders(data) {
 
     container.innerHTML = filtered.map(function(order) {
         var statusClass = 'status-' + order.status;
-        var items = order.items && order.items.length > 0
-            ? order.items.map(i => i.ingredient_name + ' (' + i.quantity + ' ' + i.unit + ')').join(', ')
-            : 'No items';
+        var createdAt = order.created_at ? new Date(order.created_at).toLocaleString() : '--';
 
-        var scheduledText = order.scheduled_send_time
-            ? '<div class="order-schedule">📅 Sending at: ' + order.scheduled_send_time + '</div>'
-            : '';
+        // Build flat line-item rows from vendors_assigned
+        var lineItems = [];
+        if (order.vendors_assigned && order.vendors_assigned.length > 0) {
+            order.vendors_assigned.forEach(function(va) {
+                var vendorLabel = esc(va.vendor_name) + (va.is_bridge_order ? ' <span class="bridge-tag">Bridge</span>' : '');
+                (va.items || []).forEach(function(item) {
+                    var qty = parseFloat(item.quantity) || 0;
+                    var rate = parseFloat(item.price_per_unit) || 0;
+                    var subtotal = qty * rate;
+                    lineItems.push({
+                        ingredient: item.ingredient_name || item.sku || '',
+                        vendorLabel: vendorLabel,
+                        qty: qty,
+                        unit: item.unit || '',
+                        rate: rate,
+                        subtotal: subtotal
+                    });
+                });
+            });
+            // Sort by ingredient name, then vendor
+            lineItems.sort(function(a, b) {
+                var ia = a.ingredient.toLowerCase(), ib = b.ingredient.toLowerCase();
+                if (ia < ib) return -1;
+                if (ia > ib) return 1;
+                return 0;
+            });
+        }
+
+        var tableHTML = '';
+        if (lineItems.length > 0) {
+            var rows = lineItems.map(function(li) {
+                return '<tr>' +
+                    '<td>' + esc(li.ingredient) + '</td>' +
+                    '<td>' + li.vendorLabel + '</td>' +
+                    '<td class="num">' + li.qty + ' ' + esc(li.unit) + '</td>' +
+                    '<td class="num">₹' + li.rate.toFixed(0) + '</td>' +
+                    '<td class="num">₹' + li.subtotal.toFixed(2) + '</td>' +
+                '</tr>';
+            }).join('');
+            tableHTML = '<table class="order-line-table">' +
+                '<thead><tr>' +
+                    '<th>Ingredient</th>' +
+                    '<th>Vendor</th>' +
+                    '<th class="num">Qty</th>' +
+                    '<th class="num">Rate</th>' +
+                    '<th class="num">Subtotal</th>' +
+                '</tr></thead>' +
+                '<tbody>' + rows + '</tbody>' +
+                '<tfoot><tr>' +
+                    '<td colspan="4" class="total-label">Total</td>' +
+                    '<td class="num total-value">₹' + (order.total_cost || 0).toFixed(2) + '</td>' +
+                '</tr></tfoot>' +
+            '</table>';
+        } else {
+            // Fallback: no vendor breakdown available, show flat items
+            var fallbackItems = order.items && order.items.length > 0
+                ? order.items.map(function(i) {
+                    return '<tr><td>' + esc(i.ingredient_name || i.sku || '') + '</td><td>--</td>' +
+                        '<td class="num">' + (i.quantity || '') + ' ' + esc(i.unit || '') + '</td>' +
+                        '<td class="num">--</td><td class="num">--</td></tr>';
+                  }).join('')
+                : '<tr><td colspan="5" class="no-vendors">No items</td></tr>';
+            tableHTML = '<table class="order-line-table">' +
+                '<thead><tr><th>Ingredient</th><th>Vendor</th><th class="num">Qty</th><th class="num">Rate</th><th class="num">Subtotal</th></tr></thead>' +
+                '<tbody>' + fallbackItems + '</tbody>' +
+                '<tfoot><tr><td colspan="4" class="total-label">Total</td><td class="num total-value">₹' + (order.total_cost || 0).toFixed(2) + '</td></tr></tfoot>' +
+            '</table>';
+        }
+
+        var scheduledText = '';
+        if (order.scheduled_send_time) {
+            var schedDate = new Date(order.scheduled_send_time.replace(' ', 'T'));
+            var schedStr = isNaN(schedDate) ? order.scheduled_send_time
+                : schedDate.toLocaleString(undefined, { dateStyle: 'medium', timeStyle: 'short' });
+            scheduledText = '<div class="order-schedule">Sending at: ' + schedStr + '</div>';
+        }
 
         var actionButtons = '';
-        if (order.status === 'queued') {
-            actionButtons = '<button class="btn-action btn-cancel" onclick="cancelOrderFromDash(\'' + order.order_id + '\')">Cancel</button>' +
-                           '<button class="btn-action btn-send-now" onclick="sendNowFromDash(\'' + order.order_id + '\')">Send Now</button>';
-        } else if (order.status === 'confirmed') {
-            actionButtons = '<button class="btn-action btn-confirm" onclick="confirmOrderFromDash(\'' + order.order_id + '\')">Confirm</button>' +
+        if (order.status === 'suggested') {
+            actionButtons = '<button class="btn-action btn-confirm" onclick="confirmSuggestionFromDash(\'' + order.order_id + '\')">Confirm</button>';
+        } else if (order.status === 'queued') {
+            actionButtons = '<button class="btn-action btn-confirm" onclick="placeNowFromDash(\'' + order.order_id + '\')">Place Now</button>' +
                            '<button class="btn-action btn-cancel" onclick="cancelOrderFromDash(\'' + order.order_id + '\')">Cancel</button>';
+        } else if (order.status === 'placed') {
+            actionButtons = '<button class="btn-action btn-receive" onclick="receiveOrderFromDash(\'' + order.order_id + '\')">Mark as Received</button>';
         }
 
         var actions = actionButtons ? '<div class="order-actions">' + actionButtons + '</div>' : '';
-
-        var createdAt = order.created_at ? new Date(order.created_at).toLocaleString() : '--';
 
         return '<div class="order-card">' +
             '<div class="order-header">' +
                 '<span class="order-id">Order ID: ' + esc(order.order_id) + '</span>' +
                 '<span class="status-badge ' + statusClass + '">' + order.status.toUpperCase() + '</span>' +
             '</div>' +
-            '<div class="order-body">' +
-                '<div class="order-items"><strong>Items:</strong> ' + esc(items) + '</div>' +
-                '<div class="order-cost"><strong>Cost:</strong> ₹' + (order.total_cost || 0).toFixed(2) + '</div>' +
-                '<div class="order-created"><strong>Created:</strong> ' + createdAt + '</div>' +
-                scheduledText +
-            '</div>' +
+            '<div class="order-meta">Created: ' + createdAt + scheduledText + '</div>' +
+            tableHTML +
             actions +
         '</div>';
     }).join('');
@@ -440,8 +511,8 @@ async function cancelOrderFromDash(orderId) {
     }
 }
 
-async function sendNowFromDash(orderId) {
-    if (!confirm('Send order ' + orderId + ' now?')) return;
+async function confirmSuggestionFromDash(orderId) {
+    if (!confirm('Confirm order ' + orderId + '? It will be queued for sending.')) return;
     try {
         const res = await fetch(API_BASE + '/approve-order', {
             method: 'POST',
@@ -450,9 +521,43 @@ async function sendNowFromDash(orderId) {
         });
         if (res.ok) {
             loadOrders(true);
-            alert('Order sent to vendors');
+            alert('Order confirmed and queued');
         } else {
-            alert('Error sending order');
+            alert('Error confirming order');
+        }
+    } catch (err) {
+        alert('Error: ' + err.message);
+    }
+}
+
+async function placeNowFromDash(orderId) {
+    if (!confirm('Place order ' + orderId + ' now? Vendor messages will be sent immediately.')) return;
+    try {
+        const res = await fetch(API_BASE + '/order/' + orderId + '/place?restaurant_id=R001', {
+            method: 'PUT'
+        });
+        if (res.ok) {
+            loadOrders(true);
+            alert('Order placed — vendor messages sent');
+        } else {
+            alert('Error placing order');
+        }
+    } catch (err) {
+        alert('Error: ' + err.message);
+    }
+}
+
+async function receiveOrderFromDash(orderId) {
+    if (!confirm('Mark order ' + orderId + ' as received?')) return;
+    try {
+        const res = await fetch(API_BASE + '/order/' + orderId + '/receive?restaurant_id=R001', {
+            method: 'PUT'
+        });
+        if (res.ok) {
+            loadOrders(true);
+            alert('Order marked as received');
+        } else {
+            alert('Error marking order as received');
         }
     } catch (err) {
         alert('Error: ' + err.message);
@@ -460,7 +565,7 @@ async function sendNowFromDash(orderId) {
 }
 
 async function confirmOrderFromDash(orderId) {
-    if (!confirm('Confirm order ' + orderId + '?')) return;
+    if (!confirm('Confirm order ' + orderId + '? It will be queued for sending.')) return;
     try {
         const res = await fetch(API_BASE + '/chat', {
             method: 'POST',
@@ -469,7 +574,7 @@ async function confirmOrderFromDash(orderId) {
         });
         if (res.ok) {
             loadOrders(true);
-            alert('Order confirmed');
+            alert('Order confirmed and queued');
         } else {
             alert('Error confirming order');
         }

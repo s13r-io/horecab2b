@@ -32,7 +32,7 @@ from utils.data_loader import (
     get_vendors_for_sku, get_all_inventory,
     compute_effective_lead_days, get_latest_price_for_vendor_sku,
     get_avg_price_for_vendor_sku, _load_vendor_pricing,
-    get_moq_for_vendor_sku
+    get_moq_for_vendor_sku, get_pending_order_quantity
 )
 from utils.helpers import audit_log
 
@@ -152,23 +152,23 @@ async def chat(request: ChatRequest):
 @app.post("/approve-order", response_model=ApproveResponse)
 async def approve_order(request: ApproveRequest):
     """
-    Approve a suggested order and dispatch to vendors.
+    Confirm a suggested or awaiting_confirmation order and queue it.
 
     Request: ApproveRequest (order_id, restaurant_id)
-    Response: ApproveResponse (status, messages, error)
+    Response: ApproveResponse (status, scheduled_send_time, error)
     """
     try:
-        logger.info(f"Approval request for order: {request.order_id}")
+        logger.info(f"Confirm request for order: {request.order_id}")
 
-        # Handle approval through orchestrator
+        # Handle confirmation through orchestrator
         response = handle_approval(request.order_id, request.restaurant_id)
 
         if response.status == "error":
-            raise HTTPException(status_code=404, detail=response.error or "Order not found or not approvable")
+            raise HTTPException(status_code=404, detail=response.error or "Order not found or not confirmable")
 
         audit_log(
             agent_name="API",
-            action="approve_order",
+            action="confirm_order",
             restaurant_id=request.restaurant_id,
             order_id=request.order_id,
             data={"status": response.status},
@@ -183,12 +183,12 @@ async def approve_order(request: ApproveRequest):
         logger.error(f"Error in approve_order: {str(e)}", exc_info=True)
         audit_log(
             agent_name="API",
-            action="approve_order_error",
+            action="confirm_order_error",
             restaurant_id=request.restaurant_id,
             order_id=request.order_id,
             error=str(e)
         )
-        raise HTTPException(status_code=500, detail="Error approving order")
+        raise HTTPException(status_code=500, detail="Error confirming order")
 
 
 # ============================================================================
@@ -454,13 +454,16 @@ async def inventory_dashboard(restaurant_id: str = "R001"):
             else:
                 status = "ok"
 
-            # Forecast order quantity (same formula as forecasting agent)
-            # Target = (2 * lead_time + 1) * adjusted_daily - current_inventory
+            # Quantities already in pipeline (queued or placed orders)
+            in_pipeline_qty = get_pending_order_quantity(sku)
+
+            # Forecast order quantity
+            # Formula: (daily_use x coverage_days) - stock_on_hand - in_pipeline_qty
             # Only show order for critical/warning items (ensures consistency)
             if status != "ok" and earliest_lead is not None and adjusted_daily > 0:
                 coverage_days = 2 * earliest_lead + 1
                 target_stock = adjusted_daily * coverage_days
-                forecast_order = round(max(0.0, target_stock - qty_on_hand), 1)
+                forecast_order = round(max(0.0, target_stock - qty_on_hand - in_pipeline_qty), 1)
             else:
                 forecast_order = 0.0
 
@@ -483,6 +486,7 @@ async def inventory_dashboard(restaurant_id: str = "R001"):
                 "avg_daily_consumption": adjusted_daily,
                 "days_of_stock": days_of_stock,
                 "earliest_delivery_days": earliest_lead,
+                "in_pipeline_qty": round(in_pipeline_qty, 1),
                 "forecast_order": forecast_order,
                 "moq": moq,
                 "moq_applied": moq_applied,
@@ -687,7 +691,7 @@ async def get_order(order_id: str):
         cursor = conn.cursor()
         cursor.execute(
             """SELECT order_id, restaurant_id, items, total_cost, status, vendors_assigned,
-               scheduled_send_time, queued_at, created_at, updated_at
+               scheduled_send_time, queued_at, received_at, created_at, updated_at
                FROM orders WHERE order_id = ?""",
             (order_id,)
         )
@@ -706,8 +710,9 @@ async def get_order(order_id: str):
             "vendors_assigned": json.loads(row[5]) if row[5] else [],
             "scheduled_send_time": row[6],
             "queued_at": row[7],
-            "created_at": row[8],
-            "updated_at": row[9]
+            "received_at": row[8],
+            "created_at": row[9],
+            "updated_at": row[10]
         }
     except HTTPException:
         raise
@@ -718,7 +723,7 @@ async def get_order(order_id: str):
 
 @app.put("/order/{order_id}/cancel")
 async def cancel_order(order_id: str, restaurant_id: str = "R001"):
-    """Cancel a confirmed or queued order."""
+    """Cancel a suggested or queued order."""
     try:
         conn = sqlite3.connect("db/prototype.db")
         cursor = conn.cursor()
@@ -730,10 +735,10 @@ async def cancel_order(order_id: str, restaurant_id: str = "R001"):
             conn.close()
             raise HTTPException(status_code=404, detail="Order not found")
 
-        if row[0] not in ("confirmed", "queued"):
+        if row[0] not in ("suggested", "queued"):
             conn.close()
             raise HTTPException(status_code=400,
-                              detail=f"Cannot cancel order with status '{row[0]}'")
+                              detail=f"Cannot cancel order with status '{row[0]}'.")
 
         from datetime import datetime
         cursor.execute(
@@ -759,6 +764,120 @@ async def cancel_order(order_id: str, restaurant_id: str = "R001"):
         raise HTTPException(status_code=500, detail="Error cancelling order")
 
 
+@app.put("/order/{order_id}/place")
+async def place_order_now(order_id: str, restaurant_id: str = "R001"):
+    """Manually place a queued order immediately (dispatch to vendors now)."""
+    try:
+        conn = sqlite3.connect("db/prototype.db")
+        cursor = conn.cursor()
+        cursor.execute(
+            "SELECT status, vendors_assigned FROM orders WHERE order_id = ? AND restaurant_id = ?",
+            (order_id, restaurant_id)
+        )
+        row = cursor.fetchone()
+
+        if not row:
+            conn.close()
+            raise HTTPException(status_code=404, detail="Order not found")
+
+        if row[0] != "queued":
+            conn.close()
+            raise HTTPException(status_code=400,
+                detail=f"Cannot place order with status '{row[0]}'. Only queued orders can be placed.")
+
+        vendors_assigned = json.loads(row[1])
+        conn.close()
+
+        from models.schemas import VendorAssignment
+        from agents.dispatcher import dispatch_order as _dispatch_order
+        assignments = [
+            VendorAssignment(
+                vendor_id=v["vendor_id"],
+                vendor_name=v["vendor_name"],
+                items=v["items"],
+                estimated_cost=v["estimated_cost"],
+                routing_reason="Manual place now"
+            )
+            for v in vendors_assigned
+        ]
+
+        config = get_demo_config()
+        messages = _dispatch_order(order_id, assignments, "Spice Junction", config["current_date"])
+
+        audit_log(
+            agent_name="API",
+            action="place_order_now",
+            restaurant_id=restaurant_id,
+            order_id=order_id,
+            data={"message_count": len(messages)},
+            duration_ms=0
+        )
+
+        return {
+            "order_id": order_id,
+            "status": "placed",
+            "messages": [{
+                "vendor_id": m.vendor_id,
+                "vendor_name": m.vendor_name,
+                "channel": m.channel,
+                "message_text": m.message_text
+            } for m in messages]
+        }
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error in place_order_now: {str(e)}", exc_info=True)
+        raise HTTPException(status_code=500, detail="Error placing order")
+
+
+@app.put("/order/{order_id}/receive")
+async def receive_order(order_id: str, restaurant_id: str = "R001"):
+    """Mark a placed order as received by the restaurant."""
+    try:
+        from datetime import datetime as _dt
+        conn = sqlite3.connect("db/prototype.db")
+        cursor = conn.cursor()
+        cursor.execute(
+            "SELECT status FROM orders WHERE order_id = ? AND restaurant_id = ?",
+            (order_id, restaurant_id)
+        )
+        row = cursor.fetchone()
+
+        if not row:
+            conn.close()
+            raise HTTPException(status_code=404, detail="Order not found")
+
+        if row[0] != "placed":
+            conn.close()
+            raise HTTPException(status_code=400,
+                detail=f"Cannot mark as received. Order status is '{row[0]}', expected 'placed'.")
+
+        now = _dt.now().isoformat()
+        cursor.execute(
+            "UPDATE orders SET status = 'received', received_at = ?, updated_at = ? WHERE order_id = ?",
+            (now, now, order_id)
+        )
+        conn.commit()
+        conn.close()
+
+        audit_log(
+            agent_name="API",
+            action="receive_order",
+            restaurant_id=restaurant_id,
+            order_id=order_id,
+            duration_ms=0
+        )
+
+        return {"order_id": order_id, "status": "received", "received_at": now}
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error in receive_order: {str(e)}", exc_info=True)
+        raise HTTPException(status_code=500, detail="Error marking order as received")
+
+
 @app.get("/api/orders")
 async def list_orders(restaurant_id: str = "R001", status: str = None):
     """List orders, optionally filtered by status."""
@@ -769,14 +888,14 @@ async def list_orders(restaurant_id: str = "R001", status: str = None):
         if status:
             cursor.execute(
                 """SELECT order_id, items, total_cost, status, scheduled_send_time,
-                   queued_at, created_at FROM orders
+                   queued_at, received_at, created_at, vendors_assigned FROM orders
                    WHERE restaurant_id = ? AND status = ? ORDER BY created_at DESC LIMIT 50""",
                 (restaurant_id, status)
             )
         else:
             cursor.execute(
                 """SELECT order_id, items, total_cost, status, scheduled_send_time,
-                   queued_at, created_at FROM orders
+                   queued_at, received_at, created_at, vendors_assigned FROM orders
                    WHERE restaurant_id = ? ORDER BY created_at DESC LIMIT 50""",
                 (restaurant_id,)
             )
@@ -792,7 +911,9 @@ async def list_orders(restaurant_id: str = "R001", status: str = None):
                 "status": r[3],
                 "scheduled_send_time": r[4],
                 "queued_at": r[5],
-                "created_at": r[6]
+                "received_at": r[6],
+                "created_at": r[7],
+                "vendors_assigned": json.loads(r[8]) if r[8] else []
             } for r in rows]
         }
 

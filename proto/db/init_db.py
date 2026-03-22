@@ -53,10 +53,11 @@ def init_database():
             updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
             items JSON NOT NULL,
             total_cost FLOAT,
-            status TEXT NOT NULL DEFAULT 'draft',
+            status TEXT NOT NULL DEFAULT 'suggested',
             vendors_assigned JSON,
             scheduled_send_time DATETIME,
             queued_at DATETIME,
+            received_at DATETIME,
             FOREIGN KEY (restaurant_id) REFERENCES restaurants(restaurant_id)
         )
     """)
@@ -135,6 +136,14 @@ def init_database():
             ))
 
     conn.commit()
+
+    # Backward-compat migration: add received_at if it doesn't exist (local dev)
+    try:
+        cursor.execute("ALTER TABLE orders ADD COLUMN received_at DATETIME")
+        conn.commit()
+    except sqlite3.OperationalError:
+        pass  # Column already exists
+
     conn.close()
 
     print(f"Database initialized at {DB_PATH}")

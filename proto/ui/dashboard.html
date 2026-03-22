@@ -54,8 +54,9 @@
                     <p><strong>Daily Use</strong> = weighted average of last 7 days consumption (recent days weighted higher), adjusted for weekends and upcoming events</p>
                     <p><strong>Days of Stock</strong> = current stock on hand / daily use</p>
                     <p><strong>Lead Time</strong> = days until earliest vendor delivery, based on each vendor's order cutoff time (if cutoff is missed today, delivery shifts by a day)</p>
-                    <p><strong>Order Qty</strong> = (daily use x coverage days) - current stock on hand</p>
+                    <p><strong>Order Qty</strong> = (daily use x coverage days) - current stock on hand - in pipeline qty</p>
                     <p>Where <strong>coverage days</strong> = lead time + lead time (next cycle) + 1 day safety buffer</p>
+                    <p>Where <strong>in pipeline qty</strong> = quantities already in Queued or Placed orders for this ingredient</p>
                     <p><strong>MOQ</strong> = if calculated order qty is below a vendor's minimum order quantity, it is rounded up to meet the MOQ</p>
                     <p class="db-formula-example">Example: Chicken Breast uses 11.5 kg/day, lead time is 1 day. Coverage = 1 + 1 + 1 = 3 days. Target stock = 11.5 x 3 = 34.5 kg. Current stock = 2.0 kg. Order = 34.5 - 2.0 = 32.5 kg.</p>
                 </div>
@@ -130,9 +131,10 @@
             </div>
             <div class="db-filter-bar">
                 <button class="filter-btn active" data-status="all">All</button>
+                <button class="filter-btn" data-status="suggested">Suggested</button>
                 <button class="filter-btn" data-status="queued">Queued</button>
-                <button class="filter-btn" data-status="dispatched">Dispatched</button>
-                <button class="filter-btn" data-status="confirmed">Confirmed</button>
+                <button class="filter-btn" data-status="placed">Placed</button>
+                <button class="filter-btn" data-status="received">Received</button>
                 <button class="filter-btn" data-status="cancelled">Cancelled</button>
             </div>
         </div>

@@ -17,27 +17,363 @@ from agents.dispatcher import dispatch_order
 from utils.helpers import generate_order_id, audit_log
 from utils.data_loader import (
     get_demo_config, get_all_ingredients, get_all_recipes,
-    get_current_inventory, get_recipes_using_ingredient
+    get_current_inventory, get_recipes_using_ingredient,
+    get_pending_order_quantity, get_adjusted_daily_consumption
 )
 from pathlib import Path
+import re
+import logging
 
-
+logger = logging.getLogger(__name__)
 
 _client = Anthropic()
 _chat_histories: dict[str, list[dict]] = {}
+
+# Conversation state: tracks pending multi-turn confirmations per restaurant
+_pending_confirmations: dict[str, dict] = {}
+
+# Staleness threshold for pending confirmations (seconds)
+_PENDING_TIMEOUT_SECONDS = 300  # 5 minutes
+
+
+def _classify_response(message: str) -> str:
+    """
+    Classify a user response to a pending confirmation prompt.
+    Returns: 'yes', 'no', 'quantity:<float>', or 'other'.
+    Lightweight — no LLM call.
+    """
+    msg = message.strip().lower()
+
+    # Explicit yes
+    if msg in ("yes", "yeah", "yep", "sure", "ok", "okay", "confirm", "go ahead", "do it",
+               "yes please", "y", "haan", "ha"):
+        return "yes"
+
+    # Explicit no
+    if msg in ("no", "nope", "cancel", "stop", "never mind", "skip", "n", "nahi", "nahi"):
+        return "no"
+
+    # Try to extract a quantity (e.g., "12", "12 kg", "order 12", "I'll take 12")
+    qty_match = re.search(r'(\d+(?:\.\d+)?)\s*(?:kg|kgs|litre|litres|l|units?)?', msg)
+    if qty_match:
+        return f"quantity:{float(qty_match.group(1))}"
+
+    return "other"
+
+
+def _gather_order_context(sku: str, target_date: str) -> dict:
+    """
+    Gather all context needed for order checks: forecast, inventory, pipeline, daily consumption.
+    """
+    forecast = forecast_ingredient(sku, target_date)
+    current_inv = get_current_inventory(sku)
+    pending_qty = get_pending_order_quantity(sku)
+    daily = get_adjusted_daily_consumption(sku, target_date)
+    effective_inv = current_inv + pending_qty
+    days_of_stock = round(effective_inv / daily, 1) if daily > 0 else None
+
+    # Get ingredient metadata
+    all_ingredients = get_all_ingredients()
+    ing = next((i for i in all_ingredients if i["sku"] == sku or i["name"].lower() == sku.lower()), None)
+
+    return {
+        "forecast": forecast,
+        "forecast_qty": forecast.forecast_quantity,
+        "current_inv": current_inv,
+        "pending_qty": round(pending_qty, 1),
+        "daily": daily,
+        "effective_inv": round(effective_inv, 1),
+        "days_of_stock": days_of_stock,
+        "ingredient": ing,
+    }
+
+
+def _is_pending_stale(pending: dict) -> bool:
+    """Check if a pending confirmation is stale (older than timeout)."""
+    created = pending.get("created_at")
+    if not created:
+        return True
+    elapsed = (datetime.now() - datetime.fromisoformat(created)).total_seconds()
+    return elapsed > _PENDING_TIMEOUT_SECONDS
+
+
+def _handle_pending_response(message: str, restaurant_id: str) -> ChatResponse:
+    """
+    Handle a user response to a pending confirmation prompt.
+    Returns a ChatResponse, or None if the pending state should be cleared
+    and the message processed as a fresh intent.
+    """
+    pending = _pending_confirmations[restaurant_id]
+
+    # Auto-clear stale state
+    if _is_pending_stale(pending):
+        del _pending_confirmations[restaurant_id]
+        return None
+
+    classification = _classify_response(message)
+
+    if classification == "no":
+        del _pending_confirmations[restaurant_id]
+        return ChatResponse(
+            response_text="Order cancelled.",
+            action="query"
+        )
+
+    if classification == "yes":
+        return _continue_order_flow(restaurant_id, pending["working_qty"])
+
+    if classification.startswith("quantity:"):
+        chosen_qty = float(classification.split(":")[1])
+        pending["working_qty"] = chosen_qty
+        return _continue_order_flow(restaurant_id, chosen_qty)
+
+    # classification == "other" — might be a topic change or the user chose a quantity option
+    # Check if it matches one of the offered choices (for quantity_choice step)
+    if pending["step"] == "quantity_choice":
+        # Try matching against the two offered quantities
+        msg_lower = message.strip().lower()
+        forecast_qty = pending["forecast_qty"]
+        user_qty = pending["user_qty"]
+        # Check for phrases like "the forecast", "recommended", "your suggestion"
+        if any(kw in msg_lower for kw in ("forecast", "recommend", "suggestion", "your", "system")):
+            pending["working_qty"] = forecast_qty
+            return _continue_order_flow(restaurant_id, forecast_qty)
+        if any(kw in msg_lower for kw in ("mine", "my", "original", "i asked")):
+            pending["working_qty"] = user_qty
+            return _continue_order_flow(restaurant_id, user_qty)
+
+    # Fall back: parse as fresh intent, clear pending if it's a different action
+    del _pending_confirmations[restaurant_id]
+    return None  # Caller will re-process as fresh intent
+
+
+def _continue_order_flow(restaurant_id: str, working_qty: float) -> ChatResponse:
+    """
+    Resume the order flow from where it was paused.
+    Runs remaining checks and either pauses again or creates the order.
+    """
+    pending = _pending_confirmations[restaurant_id]
+    step = pending["step"]
+    sku = pending["ingredient"]
+    ing_name = pending["ingredient_name"]
+    unit = pending["unit"]
+    is_perishable = pending.get("is_perishable", False)
+    forecast_qty = pending["forecast_qty"]
+    pending_pipeline_qty = pending.get("pending_qty", 0)
+
+    config = get_demo_config()
+    target_date = config["current_date"]
+
+    # After need_check or quantity_choice: proceed to routing + MOQ check
+    # After moq_check: proceed directly to order creation
+
+    if step == "moq_check":
+        # User confirmed MOQ — create order with MOQ quantity
+        del _pending_confirmations[restaurant_id]
+        return _create_order_from_pending(pending, working_qty, target_date, restaurant_id)
+
+    # --- Routing phase ---
+    from models.schemas import IngredientForecast as IF
+    order_forecast = IF(
+        sku=sku,
+        ingredient_name=ing_name,
+        forecast_quantity=working_qty,
+        unit=unit,
+        confidence=1.0,
+        reasoning=f"User-confirmed order quantity: {working_qty} {unit}"
+    )
+    # Check MOQ against the best single vendor (not sum of split assignments)
+    vendor_options = route_ingredient(sku, working_qty, target_date)
+    best_vendor_moq = vendor_options[0].moq if vendor_options else 0
+
+    if working_qty < best_vendor_moq:
+        # True MOQ bump — user's quantity is below the best vendor's minimum
+        vendor_name = vendor_options[0].vendor_name
+        moq_forecast = IF(
+            sku=sku, ingredient_name=ing_name,
+            forecast_quantity=best_vendor_moq, unit=unit,
+            confidence=1.0, reasoning=f"MOQ-adjusted: {best_vendor_moq} {unit}"
+        )
+        assignments = route_order([moq_forecast], target_date)
+        total_cost = sum(a.estimated_cost for a in assignments)
+
+        pending["step"] = "moq_check"
+        pending["working_qty"] = best_vendor_moq
+        pending["moq"] = best_vendor_moq
+        pending["assignments"] = assignments
+        pending["total_cost"] = total_cost
+
+        return ChatResponse(
+            response_text=(
+                f"Minimum order quantity requires **{best_vendor_moq} {unit}** "
+                f"(you requested {working_qty} {unit}) from {vendor_name}.\n"
+                f"Estimated cost: ₹{total_cost:.2f}\n\n"
+                f"Order {best_vendor_moq} {unit} instead?"
+            ),
+            action="awaiting_confirmation",
+            data={"step": "moq_check"}
+        )
+
+    assignments = route_order([order_forecast], target_date)
+    total_cost = sum(a.estimated_cost for a in assignments)
+
+    # All checks passed — create order
+    del _pending_confirmations[restaurant_id]
+    return _create_order_from_context(
+        restaurant_id, order_forecast, assignments, total_cost, target_date,
+        pending_pipeline_qty
+    )
+
+
+def _create_order_from_pending(pending: dict, working_qty: float, target_date: str, restaurant_id: str) -> ChatResponse:
+    """Create order using cached assignments from MOQ check step."""
+    assignments = pending.get("assignments")
+    total_cost = pending.get("total_cost", 0)
+    pending_pipeline_qty = pending.get("pending_qty", 0)
+
+    if not assignments:
+        # Re-route if assignments weren't cached
+        from models.schemas import IngredientForecast as IF
+        order_forecast = IF(
+            sku=pending["ingredient"], ingredient_name=pending["ingredient_name"],
+            forecast_quantity=working_qty, unit=pending["unit"],
+            confidence=1.0, reasoning=f"User-confirmed: {working_qty} {pending['unit']}"
+        )
+        assignments = route_order([order_forecast], target_date)
+        total_cost = sum(a.estimated_cost for a in assignments)
+    else:
+        from models.schemas import IngredientForecast as IF
+        order_forecast = IF(
+            sku=pending["ingredient"], ingredient_name=pending["ingredient_name"],
+            forecast_quantity=working_qty, unit=pending["unit"],
+            confidence=1.0, reasoning=f"User-confirmed: {working_qty} {pending['unit']}"
+        )
+
+    return _create_order_from_context(
+        restaurant_id, order_forecast, assignments, total_cost, target_date,
+        pending_pipeline_qty
+    )
+
+
+def _create_order_from_context(
+    restaurant_id: str, forecast, assignments, total_cost: float,
+    target_date: str, pending_pipeline_qty: float = 0
+) -> ChatResponse:
+    """
+    Create order in DB and return confirmation response.
+    Shared by both direct flow and pending confirmation resume.
+    """
+    config = get_demo_config()
+    current_time = config.get("current_time", "15:30")
+
+    order_id = generate_order_id()
+    send_schedule = _compute_send_schedule(assignments, current_time, target_date)
+    earliest_send_time = min([s["send_time"] for s in send_schedule.values()]) if send_schedule else None
+
+    all_items = [{
+        "sku": forecast.sku,
+        "ingredient_name": forecast.ingredient_name,
+        "quantity": forecast.forecast_quantity,
+        "unit": forecast.unit
+    }]
+
+    try:
+        conn = sqlite3.connect("db/prototype.db")
+        cursor = conn.cursor()
+        cursor.execute(
+            """INSERT INTO orders (order_id, restaurant_id, items, total_cost, status,
+               vendors_assigned, scheduled_send_time)
+               VALUES (?, ?, ?, ?, ?, ?, ?)""",
+            (order_id, restaurant_id, json.dumps(all_items), total_cost, "suggested",
+             json.dumps([{
+                 "vendor_id": a.vendor_id,
+                 "vendor_name": a.vendor_name,
+                 "items": a.items,
+                 "estimated_cost": a.estimated_cost,
+                 "is_bridge_order": a.is_bridge_order
+             } for a in assignments]),
+             earliest_send_time)
+        )
+        conn.commit()
+        conn.close()
+    except Exception as e:
+        audit_log("AG-ORCH", "create_order_error", error=str(e), order_id=order_id)
+
+    # Build confirmation text with pipeline context
+    response_text = _build_order_confirmation_text_v2(
+        order_id, forecast, assignments, send_schedule, total_cost, pending_pipeline_qty
+    )
+
+    return ChatResponse(
+        response_text=response_text,
+        action="order_confirmation",
+        data={"order_id": order_id, "total_cost": total_cost}
+    )
+
+
+def _build_order_confirmation_text_v2(
+    order_id: str, forecast, assignments, send_schedule: dict,
+    total_cost: float, pending_pipeline_qty: float = 0
+) -> str:
+    """Build order confirmation with actual routed quantities and pipeline context."""
+    is_split = any(a.is_bridge_order for a in assignments)
+    sku = forecast.sku
+    unit = forecast.unit
+
+    text = f"**Order** `{order_id}`\n\n"
+
+    if is_split:
+        total_qty = sum(
+            item["quantity"] for a in assignments for item in a.items if item["sku"] == sku
+        )
+        text += f"**{forecast.ingredient_name}** — {total_qty} {unit}\n"
+        for a in assignments:
+            for item in a.items:
+                if item["sku"] != sku:
+                    continue
+                bridge_note = " *(urgent bridge)*" if a.is_bridge_order else ""
+                text += (
+                    f"  → {item['quantity']} {unit} from **{a.vendor_name}**"
+                    f" @ ₹{item.get('price_per_unit', 0)}/{unit}{bridge_note}\n"
+                )
+    else:
+        a = assignments[0]
+        item = a.items[0]
+        text += (
+            f"**{forecast.ingredient_name}** — {item['quantity']} {unit}"
+            f" @ ₹{item.get('price_per_unit', 0)}/{unit} → **{a.vendor_name}**\n"
+        )
+
+    text += f"\n**Total: ₹{total_cost:.2f}**\n"
+
+    if pending_pipeline_qty > 0:
+        text += f"\n*Note: {pending_pipeline_qty} {unit} of {forecast.ingredient_name} already on order.*\n"
+
+    text += "\n**Dispatch**\n"
+    for a in assignments:
+        sched = send_schedule.get(a.vendor_id, {})
+        send_time = sched.get("send_time", "")
+        send_note = sched.get("note", "")
+        bridge_note = " (bridge)" if a.is_bridge_order else ""
+        text += f"• **{a.vendor_name}**{bridge_note} — {send_time} *({send_note})*\n"
+
+    text += "\nReply **confirm** to place or **cancel** to discard."
+    return text
 
 
 def handle_message(message: str, restaurant_id: str) -> ChatResponse:
     """
     Main message handler. Routes to appropriate agents based on intent.
-
-    Intent routing:
-    - low_stock → forecast_ingredient → route_ingredient → create order (status=suggested)
-    - approve_suggestion → handle_approval
-    - forecast_today → handle_forecast_today
-    - price_check → route_ingredient (no order)
-    - query → direct Claude API call
+    Checks for pending confirmations before parsing new intent.
     """
+    # Check for pending confirmation first
+    pending = _pending_confirmations.get(restaurant_id)
+    if pending:
+        result = _handle_pending_response(message, restaurant_id)
+        if result is not None:
+            return result
+        # result is None → pending was cleared, process as fresh intent
+
     # Parse intent
     intent = parse_intent(message, restaurant_id)
 
@@ -161,7 +497,7 @@ def _handle_low_stock(intent, restaurant_id: str) -> ChatResponse:
             )
         response_text += (
             f"**Total Cost:** ₹{total_cost:.2f}\n\n"
-            f"✓ Ready to approve. Click 'Approve' to dispatch."
+            f"✓ Click 'Confirm Order' to queue this order."
         )
     else:
         # Single order response
@@ -177,7 +513,7 @@ def _handle_low_stock(intent, restaurant_id: str) -> ChatResponse:
             f"**Quantity:** {actual_qty} {forecast.unit}{moq_note}\n"
             f"**Assigned to:** {vendor_names}\n"
             f"**Estimated Cost:** ₹{total_cost:.2f}\n\n"
-            f"✓ Ready to approve. Click 'Approve' to dispatch."
+            f"✓ Click 'Confirm Order' to queue this order."
         )
 
     return ChatResponse(
@@ -214,10 +550,11 @@ def _handle_approve_suggestion(intent, restaurant_id: str) -> ChatResponse:
             action="query"
         )
 
+    scheduled = approve_response.scheduled_send_time
     return ChatResponse(
-        response_text=f"✅ Order {order_id} approved and dispatched!",
-        action="query",
-        data={"order_id": order_id, "status": "dispatched"}
+        response_text=f"✅ Order {order_id} confirmed and queued!\n📅 Vendor messages will be sent at {scheduled}",
+        action="order_queued",
+        data={"order_id": order_id, "status": "queued", "scheduled_send_time": scheduled}
     )
 
 
@@ -436,16 +773,19 @@ def _handle_general_query(message: str, restaurant_id: str) -> ChatResponse:
 
 def handle_approval(order_id: str, restaurant_id: str) -> ApproveResponse:
     """
-    Approve and dispatch an order.
+    Confirm a suggested order and queue it with a scheduled send time.
 
-    Verify status=="suggested", set "approved", dispatch, return messages.
+    Verify status is 'suggested', compute send schedule, set 'queued'.
     """
     try:
         conn = sqlite3.connect("db/prototype.db")
         cursor = conn.cursor()
 
         # Get order
-        cursor.execute("SELECT status, items, vendors_assigned FROM orders WHERE order_id = ?", (order_id,))
+        cursor.execute(
+            "SELECT status, items, vendors_assigned, scheduled_send_time FROM orders WHERE order_id = ?",
+            (order_id,)
+        )
         row = cursor.fetchone()
 
         if not row:
@@ -456,25 +796,17 @@ def handle_approval(order_id: str, restaurant_id: str) -> ApproveResponse:
                 error="Order not found"
             )
 
-        status, items_json, vendors_assigned_json = row
+        status, items_json, vendors_assigned_json, existing_send_time = row
 
         if status != "suggested":
             conn.close()
             return ApproveResponse(
                 status="error",
                 messages=[],
-                error=f"Order status is '{status}', not 'suggested'"
+                error=f"Order status is '{status}', expected 'suggested'"
             )
 
-        # Update status to approved
-        cursor.execute(
-            "UPDATE orders SET status = ?, updated_at = ? WHERE order_id = ?",
-            ("approved", datetime.now().isoformat(), order_id)
-        )
-        conn.commit()
-        conn.close()
-
-        # Dispatch
+        # Compute scheduled send time if not already set
         vendors_assigned = json.loads(vendors_assigned_json)
         from models.schemas import VendorAssignment
 
@@ -484,22 +816,37 @@ def handle_approval(order_id: str, restaurant_id: str) -> ApproveResponse:
                 vendor_name=v["vendor_name"],
                 items=v["items"],
                 estimated_cost=v["estimated_cost"],
-                routing_reason="Order approved"
+                routing_reason="Order confirmed"
             )
             for v in vendors_assigned
         ]
 
-        config = get_demo_config()
-        messages = dispatch_order(order_id, assignments, "Spice Junction", config["current_date"])
+        if not existing_send_time:
+            config = get_demo_config()
+            current_time = config.get("current_time", "15:30")
+            target_date = config["current_date"]
+            send_schedule = _compute_send_schedule(assignments, current_time, target_date)
+            scheduled_send_time = min(s["send_time"] for s in send_schedule.values()) if send_schedule else None
+        else:
+            scheduled_send_time = existing_send_time
+
+        # Transition to queued
+        now = datetime.now().isoformat()
+        cursor.execute(
+            "UPDATE orders SET status = 'queued', queued_at = ?, scheduled_send_time = ?, updated_at = ? WHERE order_id = ?",
+            (now, scheduled_send_time, now, order_id)
+        )
+        conn.commit()
+        conn.close()
+
+        # Clear chat history so forecasts recalculate with this order in pipeline
+        if restaurant_id in _chat_histories:
+            _chat_histories[restaurant_id] = []
 
         return ApproveResponse(
-            status="dispatched",
-            messages=[{
-                "vendor_id": m.vendor_id,
-                "vendor_name": m.vendor_name,
-                "channel": m.channel,
-                "message_text": m.message_text
-            } for m in messages]
+            status="queued",
+            messages=[],
+            scheduled_send_time=scheduled_send_time
         )
 
     except Exception as e:
@@ -511,120 +858,248 @@ def handle_approval(order_id: str, restaurant_id: str) -> ApproveResponse:
 
 
 def _handle_place_order(intent, restaurant_id: str) -> ChatResponse:
-    """Handle place_order intent - create order from context."""
+    """
+    Handle place_order intent with multi-turn conversational checks.
+
+    Flow:
+    1. Resolve ingredient
+    2. Gather context (forecast, inventory, pipeline)
+    3. Need check (if item not needed) → pause for confirmation
+    4. Quantity comparison (if user qty ≠ forecast) → pause for confirmation
+    5. Route to vendors
+    6. MOQ check (if qty bumped) → pause for confirmation
+    7. Create order
+    """
     config = get_demo_config()
     target_date = config["current_date"]
-    current_time = config.get("current_time", "15:30")
 
     try:
-        # Determine what to order based on context
+        # --- Forecast context (multi-item) — keep original behavior, no per-item checks ---
         if intent.context == "forecast" or (not intent.ingredient and not intent.items):
-            # Forecast context - order all forecasted items
             forecasts = forecast_all_ingredients(target_date)
             if not forecasts:
                 return ChatResponse(
-                    response_text="📊 No items need ordering based on today's forecast.",
+                    response_text="No items need ordering based on today's forecast.",
                     action="query"
                 )
-        elif intent.ingredient:
-            # Single ingredient context
-            qty = intent.quantity
-            if qty is None:
-                # No quantity specified - use forecast
-                forecast = forecast_ingredient(intent.ingredient, target_date)
-                qty = forecast.forecast_quantity
-                if qty <= 0:
-                    return ChatResponse(
-                        response_text=f"✓ {forecast.ingredient_name} is well-stocked.",
-                        action="query"
-                    )
-                forecasts = [forecast]
-            else:
-                # User specified quantity - use it directly instead of forecast calculation
-                all_ingredients = get_all_ingredients()
-                ing = next((i for i in all_ingredients if i["sku"] == intent.ingredient or i["name"].lower() == intent.ingredient.lower()), None)
-                if not ing:
-                    return ChatResponse(
-                        response_text=f"❌ Unknown ingredient: {intent.ingredient}",
-                        action="query"
-                    )
+            assignments = route_order(forecasts, target_date)
+            total_cost = sum(a.estimated_cost for a in assignments)
+            current_time = config.get("current_time", "15:30")
+            send_schedule = _compute_send_schedule(assignments, current_time, target_date)
+            order_id = generate_order_id()
+            earliest_send_time = min([s["send_time"] for s in send_schedule.values()]) if send_schedule else None
+            all_items = [{"sku": f.sku, "ingredient_name": f.ingredient_name,
+                          "quantity": f.forecast_quantity, "unit": f.unit} for f in forecasts]
+            try:
+                conn = sqlite3.connect("db/prototype.db")
+                cursor = conn.cursor()
+                cursor.execute(
+                    """INSERT INTO orders (order_id, restaurant_id, items, total_cost, status,
+                       vendors_assigned, scheduled_send_time) VALUES (?, ?, ?, ?, ?, ?, ?)""",
+                    (order_id, restaurant_id, json.dumps(all_items), total_cost, "suggested",
+                     json.dumps([{"vendor_id": a.vendor_id, "vendor_name": a.vendor_name,
+                                  "items": a.items, "estimated_cost": a.estimated_cost,
+                                  "is_bridge_order": a.is_bridge_order} for a in assignments]),
+                     earliest_send_time))
+                conn.commit()
+                conn.close()
+            except Exception as e:
+                audit_log("AG-ORCH", "create_order_error", error=str(e), order_id=order_id)
+            response_text = _build_order_confirmation_text(order_id, forecasts, assignments, send_schedule, total_cost)
+            return ChatResponse(
+                response_text=response_text,
+                action="order_confirmation",
+                data={"order_id": order_id, "total_cost": total_cost}
+            )
 
-                # Create forecast with user-specified quantity
-                from models.schemas import IngredientForecast
-                forecast = IngredientForecast(
-                    sku=ing["sku"],
-                    ingredient_name=ing["name"],
-                    forecast_quantity=qty,  # Use user-specified quantity
-                    unit=ing["unit"],
-                    confidence=1.0,
-                    reasoning=f"User-specified order quantity: {qty} {ing['unit']}"
-                )
-                forecasts = [forecast]
-        else:
+        # --- Single ingredient context ---
+        if not intent.ingredient:
             return ChatResponse(
                 response_text="What would you like to order? Say 'order the forecast' or specify an ingredient.",
                 action="query"
             )
 
-        # Route to vendors
-        assignments = route_order(forecasts, target_date)
-        total_cost = sum(a.estimated_cost for a in assignments)
+        user_qty = intent.quantity  # may be None
 
-        # Compute send schedule
-        send_schedule = _compute_send_schedule(assignments, current_time, target_date)
-
-        # Create order with status="confirmed"
-        order_id = generate_order_id()
-        earliest_send_time = min([s["send_time"] for s in send_schedule.values()]) if send_schedule else None
-
-        all_items = []
-        for forecast in forecasts:
-            all_items.append({
-                "sku": forecast.sku,
-                "ingredient_name": forecast.ingredient_name,
-                "quantity": forecast.forecast_quantity,
-                "unit": forecast.unit
-            })
-
-        conn = sqlite3.connect("db/prototype.db")
-        cursor = conn.cursor()
-        cursor.execute(
-            """INSERT INTO orders (order_id, restaurant_id, items, total_cost, status,
-               vendors_assigned, scheduled_send_time)
-               VALUES (?, ?, ?, ?, ?, ?, ?)""",
-            (order_id, restaurant_id, json.dumps(all_items), total_cost, "confirmed",
-             json.dumps([{
-                 "vendor_id": a.vendor_id,
-                 "vendor_name": a.vendor_name,
-                 "items": a.items,
-                 "estimated_cost": a.estimated_cost,
-                 "is_bridge_order": a.is_bridge_order
-             } for a in assignments]),
-             earliest_send_time)
+        # Resolve ingredient
+        all_ingredients = get_all_ingredients()
+        ing = next(
+            (i for i in all_ingredients
+             if i["sku"] == intent.ingredient or i["name"].lower() == intent.ingredient.lower()),
+            None
         )
-        conn.commit()
-        conn.close()
+        if not ing:
+            return ChatResponse(
+                response_text=f"Unknown ingredient: {intent.ingredient}",
+                action="query"
+            )
 
-        # Build confirmation text
-        response_text = _build_order_confirmation_text(order_id, forecasts, assignments, send_schedule, total_cost)
+        sku = ing["sku"]
 
-        return ChatResponse(
-            response_text=response_text,
-            action="order_confirmation",
-            data={"order_id": order_id, "total_cost": total_cost}
-        )
+        # Gather full context
+        ctx = _gather_order_context(sku, target_date)
+        forecast_qty = ctx["forecast_qty"]
+        current_inv = ctx["current_inv"]
+        pending_qty = ctx["pending_qty"]
+        daily = ctx["daily"]
+        days_of_stock = ctx["days_of_stock"]
+        unit = ing["unit"]
+
+        # --- No quantity specified: use forecast directly ---
+        if user_qty is None:
+            if forecast_qty <= 0:
+                # Well-stocked — inform with pipeline breakdown
+                if pending_qty > 0:
+                    msg = (
+                        f"{ing['name']} is well-stocked. "
+                        f"You have {current_inv} {unit} on hand + {pending_qty} {unit} already on order "
+                        f"= {ctx['effective_inv']} {unit} effective stock"
+                    )
+                else:
+                    msg = f"{ing['name']} is well-stocked ({current_inv} {unit} on hand"
+                    if days_of_stock is not None:
+                        msg += f", ~{days_of_stock} days of stock"
+                    msg += ")."
+                return ChatResponse(response_text=msg, action="query")
+
+            # Use forecast quantity, skip to routing + MOQ
+            working_qty = forecast_qty
+            _pending_confirmations[restaurant_id] = {
+                "step": "routing",  # skip straight to routing
+                "ingredient": sku,
+                "ingredient_name": ing["name"],
+                "unit": unit,
+                "user_qty": forecast_qty,
+                "forecast_qty": forecast_qty,
+                "working_qty": working_qty,
+                "is_perishable": ing.get("perishable", False),
+                "shelf_life_days": ing.get("shelf_life_days"),
+                "days_of_stock": days_of_stock,
+                "current_inv": current_inv,
+                "pending_qty": pending_qty,
+                "daily": daily,
+                "created_at": datetime.now().isoformat(),
+            }
+            return _continue_order_flow(restaurant_id, working_qty)
+
+        # --- User specified a quantity ---
+
+        # STEP 2a: Need check — is the item needed?
+        if forecast_qty <= 0:
+            # Item not needed — warn with pipeline breakdown
+            if pending_qty > 0:
+                msg = (
+                    f"You don't appear to need more **{ing['name']}** right now.\n"
+                    f"• On hand: {current_inv} {unit}\n"
+                    f"• Already on order (queued/placed): {pending_qty} {unit}\n"
+                    f"• Effective stock: {ctx['effective_inv']} {unit}"
+                )
+            else:
+                msg = (
+                    f"You don't appear to need more **{ing['name']}** right now.\n"
+                    f"• On hand: {current_inv} {unit}"
+                )
+            if days_of_stock is not None:
+                msg += f"\n• Lasts approximately **{days_of_stock} days**"
+            msg += f"\n\nDo you still want to order {user_qty} {unit}?"
+
+            _pending_confirmations[restaurant_id] = {
+                "step": "need_check",
+                "ingredient": sku,
+                "ingredient_name": ing["name"],
+                "unit": unit,
+                "user_qty": user_qty,
+                "forecast_qty": 0,
+                "working_qty": user_qty,
+                "is_perishable": ing.get("perishable", False),
+                "shelf_life_days": ing.get("shelf_life_days"),
+                "days_of_stock": days_of_stock,
+                "current_inv": current_inv,
+                "pending_qty": pending_qty,
+                "daily": daily,
+                "created_at": datetime.now().isoformat(),
+            }
+            return ChatResponse(
+                response_text=msg,
+                action="awaiting_confirmation",
+                data={"step": "need_check"}
+            )
+
+        # STEP 2b: Quantity comparison — user qty vs forecast qty
+        if user_qty != forecast_qty:
+            if pending_qty > 0:
+                msg = (
+                    f"Based on forecast, you need **{forecast_qty} {unit}** of {ing['name']} "
+                    f"(accounting for {current_inv} {unit} on hand + {pending_qty} {unit} already on order).\n"
+                    f"You asked for **{user_qty} {unit}**.\n\n"
+                    f"Order **{user_qty}** or **{forecast_qty} {unit}**?"
+                )
+            else:
+                msg = (
+                    f"Based on forecast, you need **{forecast_qty} {unit}** of {ing['name']} "
+                    f"(you have {current_inv} {unit} on hand).\n"
+                    f"You asked for **{user_qty} {unit}**.\n\n"
+                    f"Order **{user_qty}** or **{forecast_qty} {unit}**?"
+                )
+
+            _pending_confirmations[restaurant_id] = {
+                "step": "quantity_choice",
+                "ingredient": sku,
+                "ingredient_name": ing["name"],
+                "unit": unit,
+                "user_qty": user_qty,
+                "forecast_qty": forecast_qty,
+                "working_qty": user_qty,  # default to user's choice
+                "is_perishable": ing.get("perishable", False),
+                "shelf_life_days": ing.get("shelf_life_days"),
+                "days_of_stock": days_of_stock,
+                "current_inv": current_inv,
+                "pending_qty": pending_qty,
+                "daily": daily,
+                "created_at": datetime.now().isoformat(),
+            }
+            return ChatResponse(
+                response_text=msg,
+                action="awaiting_confirmation",
+                data={
+                    "step": "quantity_choice",
+                    "choices": [user_qty, forecast_qty],
+                    "unit": unit
+                }
+            )
+
+        # STEP 2c: Quantities match — proceed directly to routing + MOQ
+        _pending_confirmations[restaurant_id] = {
+            "step": "routing",
+            "ingredient": sku,
+            "ingredient_name": ing["name"],
+            "unit": unit,
+            "user_qty": user_qty,
+            "forecast_qty": forecast_qty,
+            "working_qty": user_qty,
+            "is_perishable": ing.get("perishable", False),
+            "shelf_life_days": ing.get("shelf_life_days"),
+            "days_of_stock": days_of_stock,
+            "current_inv": current_inv,
+            "pending_qty": pending_qty,
+            "daily": daily,
+            "created_at": datetime.now().isoformat(),
+        }
+        return _continue_order_flow(restaurant_id, user_qty)
 
     except Exception as e:
+        # Clean up pending state on error
+        _pending_confirmations.pop(restaurant_id, None)
         audit_log("AG-ORCH", "place_order_error", error=str(e), restaurant_id=restaurant_id)
         return ChatResponse(
-            response_text=f"❌ Error creating order: {str(e)}",
+            response_text=f"Error creating order: {str(e)}",
             action="query"
         )
 
 
 def _handle_confirm_order(intent, restaurant_id: str) -> ChatResponse:
-    """Handle confirm_order intent - transition confirmed→queued."""
-    order_id = intent.order_id or _get_latest_confirmed_order(restaurant_id)
+    """Handle confirm_order intent - transition suggested→queued."""
+    order_id = intent.order_id or _get_latest_suggested_order(restaurant_id)
 
     if not order_id:
         return ChatResponse(
@@ -638,7 +1113,7 @@ def _handle_confirm_order(intent, restaurant_id: str) -> ChatResponse:
         cursor.execute("SELECT status, scheduled_send_time FROM orders WHERE order_id = ?", (order_id,))
         row = cursor.fetchone()
 
-        if not row or row[0] != "confirmed":
+        if not row or row[0] != "suggested":
             conn.close()
             return ChatResponse(
                 response_text=f"❌ Order {order_id} is not awaiting confirmation.",
@@ -727,21 +1202,6 @@ def _build_order_confirmation_text(order_id: str, forecasts, assignments, send_s
     text += "Say **'confirm'** to queue this order, or **'cancel'** to discard."
     return text
 
-
-def _get_latest_confirmed_order(restaurant_id: str) -> str:
-    """Get most recent order with status='confirmed'."""
-    try:
-        conn = sqlite3.connect("db/prototype.db")
-        cursor = conn.cursor()
-        cursor.execute(
-            "SELECT order_id FROM orders WHERE restaurant_id = ? AND status = 'confirmed' ORDER BY created_at DESC LIMIT 1",
-            (restaurant_id,)
-        )
-        row = cursor.fetchone()
-        conn.close()
-        return row[0] if row else None
-    except Exception:
-        return None
 
 
 def _get_latest_suggested_order(restaurant_id: str) -> str:

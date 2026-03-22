@@ -62,6 +62,11 @@ async function sendMessage() {
             addQueuedOrderMessage(data.data.order_id, data.data.scheduled_send_time);
         }
 
+        // Handle awaiting confirmation (multi-turn order flow)
+        if (data.action === 'awaiting_confirmation') {
+            addConfirmationButtons(data.data);
+        }
+
     } catch (error) {
         removeTypingIndicator();
         addBubble('assistant', `Error: ${error.message}`);
@@ -98,6 +103,11 @@ async function runForecast() {
 
         addBubble('assistant', forecastText);
 
+        // Add "Place Order" button if there are items to order
+        if (data.forecasts && data.forecasts.length > 0) {
+            addPlaceOrderButton();
+        }
+
     } catch (error) {
         addBubble('assistant', `Error: ${error.message}`);
     } finally {
@@ -132,8 +142,8 @@ async function approveOrder(orderId) {
 
         const data = await response.json();
 
-        if (data.status === 'dispatched') {
-            addBubble('assistant', `Order ${orderId} approved and dispatched!\n\nMessages sent to vendors.`);
+        if (data.status === 'queued') {
+            addBubble('assistant', `✅ Order ${orderId} confirmed and queued!\n📅 Vendor messages will be sent at ${data.scheduled_send_time || 'scheduled time'}.`);
         } else if (data.error) {
             addBubble('assistant', `Error: ${data.error}`);
         }
@@ -183,9 +193,32 @@ function addApproveButton(orderId) {
 
     const btn = document.createElement('button');
     btn.className = 'btn-action';
-    btn.textContent = 'Approve Order';
+    btn.textContent = 'Confirm Order';
     btn.dataset.orderId = orderId;
     btn.onclick = () => approveOrder(orderId);
+
+    actionDiv.appendChild(btn);
+    lastBubble.appendChild(actionDiv);
+}
+
+
+/**
+ * Add "Place Order" button to last assistant bubble (after forecast)
+ */
+function addPlaceOrderButton() {
+    const lastBubble = chatContainer.lastElementChild?.querySelector('.bubble');
+    if (!lastBubble) return;
+
+    const actionDiv = document.createElement('div');
+    actionDiv.className = 'action-buttons';
+
+    const btn = document.createElement('button');
+    btn.className = 'btn-action btn-confirm';
+    btn.textContent = 'Place Order';
+    btn.onclick = () => {
+        messageInput.value = 'place order for today\'s forecast';
+        sendMessage();
+    };
 
     actionDiv.appendChild(btn);
     lastBubble.appendChild(actionDiv);
@@ -243,7 +276,7 @@ async function cancelOrder(orderId) {
 
 
 /**
- * Show queued order message with scheduled send time
+ * Show queued order message with Place Now and Cancel buttons
  */
 function addQueuedOrderMessage(orderId, scheduledSendTime) {
     const lastBubble = chatContainer.lastElementChild?.querySelector('.bubble');
@@ -252,12 +285,88 @@ function addQueuedOrderMessage(orderId, scheduledSendTime) {
     const actionDiv = document.createElement('div');
     actionDiv.className = 'action-buttons';
 
+    const placeNowBtn = document.createElement('button');
+    placeNowBtn.className = 'btn-action btn-confirm';
+    placeNowBtn.textContent = 'Place Now';
+    placeNowBtn.onclick = () => placeOrderNow(orderId);
+
     const cancelBtn = document.createElement('button');
     cancelBtn.className = 'btn-action btn-cancel';
     cancelBtn.textContent = 'Cancel Order';
     cancelBtn.onclick = () => cancelOrder(orderId);
 
+    actionDiv.appendChild(placeNowBtn);
     actionDiv.appendChild(cancelBtn);
+    lastBubble.appendChild(actionDiv);
+}
+
+
+/**
+ * Manually place a queued order now
+ */
+async function placeOrderNow(orderId) {
+    try {
+        const response = await fetch(`${API_BASE}/order/${orderId}/place?restaurant_id=${RESTAURANT_ID}`, {
+            method: 'PUT'
+        });
+
+        if (response.ok) {
+            addBubble('assistant', `✅ Order ${orderId} has been placed! Vendor messages have been sent.`);
+        } else {
+            const error = await response.json();
+            addBubble('assistant', `❌ Error: ${error.detail || 'Could not place order'}`);
+        }
+    } catch (error) {
+        addBubble('assistant', `❌ Error: ${error.message}`);
+    }
+}
+
+
+/**
+ * Add confirmation buttons for multi-turn order flow
+ */
+function addConfirmationButtons(data) {
+    const lastBubble = chatContainer.lastElementChild?.querySelector('.bubble');
+    if (!lastBubble) return;
+
+    const actionDiv = document.createElement('div');
+    actionDiv.className = 'action-buttons';
+
+    if (data && data.step === 'quantity_choice' && data.choices && data.choices.length === 2) {
+        // Quantity choice: two buttons with the offered quantities
+        const unit = data.unit || 'kg';
+        data.choices.forEach(qty => {
+            const btn = document.createElement('button');
+            btn.className = 'btn-action btn-confirm';
+            btn.textContent = `${qty} ${unit}`;
+            btn.onclick = () => {
+                messageInput.value = String(qty);
+                sendMessage();
+            };
+            actionDiv.appendChild(btn);
+        });
+    } else {
+        // Yes/No buttons for need_check, moq_check, etc.
+        const yesBtn = document.createElement('button');
+        yesBtn.className = 'btn-action btn-confirm';
+        yesBtn.textContent = 'Yes';
+        yesBtn.onclick = () => {
+            messageInput.value = 'yes';
+            sendMessage();
+        };
+
+        const noBtn = document.createElement('button');
+        noBtn.className = 'btn-action btn-cancel';
+        noBtn.textContent = 'No';
+        noBtn.onclick = () => {
+            messageInput.value = 'no';
+            sendMessage();
+        };
+
+        actionDiv.appendChild(yesBtn);
+        actionDiv.appendChild(noBtn);
+    }
+
     lastBubble.appendChild(actionDiv);
 }
 

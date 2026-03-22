@@ -165,14 +165,14 @@ def get_current_inventory(sku: str) -> float:
 
 
 def get_pending_order_quantity(sku: str, restaurant_id: str = "R001") -> float:
-    """Sum quantities of a SKU across all confirmed/queued orders (not yet dispatched)."""
+    """Sum quantities of a SKU across all queued/placed orders (in-flight, not yet received)."""
     import sqlite3
     db_path = Path(__file__).parent.parent / "db" / "prototype.db"
     try:
         conn = sqlite3.connect(str(db_path))
         cursor = conn.cursor()
         cursor.execute(
-            "SELECT items FROM orders WHERE restaurant_id = ? AND status IN ('confirmed', 'queued')",
+            "SELECT items FROM orders WHERE restaurant_id = ? AND status IN ('queued', 'placed')",
             (restaurant_id,)
         )
         rows = cursor.fetchall()
