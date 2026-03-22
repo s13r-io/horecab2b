@@ -23,6 +23,7 @@
         <button class="db-tab active" data-tab="inventory">Inventory</button>
         <button class="db-tab" data-tab="menu">Menu & Dishes</button>
         <button class="db-tab" data-tab="vendors">Vendors</button>
+        <button class="db-tab" data-tab="orders">Orders</button>
     </div>
 
     <!-- Inventory View -->
@@ -117,6 +118,26 @@
                     <p><strong>Cutoff Time</strong> = orders placed after this time ship the next business day</p>
                 </div>
             </div>
+        </div>
+    </div>
+
+    <!-- Orders View -->
+    <div id="ordersView" class="db-view" style="display:none">
+        <div class="db-section-header">
+            <div>
+                <h2>Orders</h2>
+                <span class="db-date" id="ordersDate"></span>
+            </div>
+            <div class="db-filter-bar">
+                <button class="filter-btn active" data-status="all">All</button>
+                <button class="filter-btn" data-status="queued">Queued</button>
+                <button class="filter-btn" data-status="dispatched">Dispatched</button>
+                <button class="filter-btn" data-status="confirmed">Confirmed</button>
+                <button class="filter-btn" data-status="cancelled">Cancelled</button>
+            </div>
+        </div>
+        <div id="ordersContent">
+            <p class="loading-text">Loading orders...</p>
         </div>
     </div>
 

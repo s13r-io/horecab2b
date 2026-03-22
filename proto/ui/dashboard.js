@@ -19,10 +19,12 @@ function switchTab(tabName) {
     document.getElementById('inventoryView').style.display = tabName === 'inventory' ? 'block' : 'none';
     document.getElementById('menuView').style.display = tabName === 'menu' ? 'block' : 'none';
     document.getElementById('vendorsView').style.display = tabName === 'vendors' ? 'block' : 'none';
+    document.getElementById('ordersView').style.display = tabName === 'orders' ? 'block' : 'none';
 
     if (tabName === 'inventory') loadInventory();
     if (tabName === 'menu') loadMenu();
     if (tabName === 'vendors') loadVendors();
+    if (tabName === 'orders') loadOrders();
 }
 
 
@@ -329,6 +331,151 @@ function renderVendors(data) {
             '</div>' +
         '</div>';
     }).join('');
+}
+
+
+// ====== Orders ======
+
+let ordersCache = null;
+let ordersCurrentFilter = 'all';
+let ordersRefreshInterval = null;
+
+async function loadOrders(force) {
+    if (ordersCache && !force) { renderOrders(ordersCache); return; }
+
+    document.getElementById('ordersContent').innerHTML =
+        '<p class="loading-text">Loading orders...</p>';
+
+    try {
+        const res = await fetch(API_BASE + '/api/orders?restaurant_id=R001');
+        if (!res.ok) throw new Error('Failed to load');
+        const data = await res.json();
+        ordersCache = data;
+        renderOrders(data);
+
+        // Set up auto-refresh every 30s
+        if (ordersRefreshInterval) clearInterval(ordersRefreshInterval);
+        ordersRefreshInterval = setInterval(() => loadOrders(true), 30000);
+    } catch (err) {
+        document.getElementById('ordersContent').innerHTML =
+            '<p class="loading-text">Error loading orders data.</p>';
+    }
+
+    document.getElementById('ordersDate').textContent = 'Last updated: ' + new Date().toLocaleTimeString();
+}
+
+function renderOrders(data) {
+    // Set up filter buttons
+    document.querySelectorAll('.db-filter-bar .filter-btn').forEach(btn => {
+        btn.classList.toggle('active', btn.dataset.status === ordersCurrentFilter);
+        btn.addEventListener('click', () => {
+            ordersCurrentFilter = btn.dataset.status;
+            renderOrders(data);
+        });
+    });
+
+    var container = document.getElementById('ordersContent');
+
+    var filtered = data.orders;
+    if (ordersCurrentFilter !== 'all') {
+        filtered = data.orders.filter(o => o.status === ordersCurrentFilter);
+    }
+
+    if (filtered.length === 0) {
+        container.innerHTML = '<p class="loading-text">No orders found.</p>';
+        return;
+    }
+
+    container.innerHTML = filtered.map(function(order) {
+        var statusClass = 'status-' + order.status;
+        var items = order.items && order.items.length > 0
+            ? order.items.map(i => i.ingredient_name + ' (' + i.quantity + ' ' + i.unit + ')').join(', ')
+            : 'No items';
+
+        var scheduledText = order.scheduled_send_time
+            ? '<div class="order-schedule">📅 Sending at: ' + order.scheduled_send_time + '</div>'
+            : '';
+
+        var actionButtons = '';
+        if (order.status === 'queued') {
+            actionButtons = '<button class="btn-action btn-cancel" onclick="cancelOrderFromDash(\'' + order.order_id + '\')">Cancel</button>' +
+                           '<button class="btn-action btn-send-now" onclick="sendNowFromDash(\'' + order.order_id + '\')">Send Now</button>';
+        } else if (order.status === 'confirmed') {
+            actionButtons = '<button class="btn-action btn-confirm" onclick="confirmOrderFromDash(\'' + order.order_id + '\')">Confirm</button>' +
+                           '<button class="btn-action btn-cancel" onclick="cancelOrderFromDash(\'' + order.order_id + '\')">Cancel</button>';
+        }
+
+        var actions = actionButtons ? '<div class="order-actions">' + actionButtons + '</div>' : '';
+
+        var createdAt = order.created_at ? new Date(order.created_at).toLocaleString() : '--';
+
+        return '<div class="order-card">' +
+            '<div class="order-header">' +
+                '<span class="order-id">Order ID: ' + esc(order.order_id) + '</span>' +
+                '<span class="status-badge ' + statusClass + '">' + order.status.toUpperCase() + '</span>' +
+            '</div>' +
+            '<div class="order-body">' +
+                '<div class="order-items"><strong>Items:</strong> ' + esc(items) + '</div>' +
+                '<div class="order-cost"><strong>Cost:</strong> ₹' + (order.total_cost || 0).toFixed(2) + '</div>' +
+                '<div class="order-created"><strong>Created:</strong> ' + createdAt + '</div>' +
+                scheduledText +
+            '</div>' +
+            actions +
+        '</div>';
+    }).join('');
+}
+
+async function cancelOrderFromDash(orderId) {
+    if (!confirm('Cancel order ' + orderId + '?')) return;
+    try {
+        const res = await fetch(API_BASE + '/order/' + orderId + '/cancel?restaurant_id=R001', { method: 'PUT' });
+        if (res.ok) {
+            loadOrders(true);
+            alert('Order cancelled');
+        } else {
+            alert('Error cancelling order');
+        }
+    } catch (err) {
+        alert('Error: ' + err.message);
+    }
+}
+
+async function sendNowFromDash(orderId) {
+    if (!confirm('Send order ' + orderId + ' now?')) return;
+    try {
+        const res = await fetch(API_BASE + '/approve-order', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ order_id: orderId, restaurant_id: 'R001' })
+        });
+        if (res.ok) {
+            loadOrders(true);
+            alert('Order sent to vendors');
+        } else {
+            alert('Error sending order');
+        }
+    } catch (err) {
+        alert('Error: ' + err.message);
+    }
+}
+
+async function confirmOrderFromDash(orderId) {
+    if (!confirm('Confirm order ' + orderId + '?')) return;
+    try {
+        const res = await fetch(API_BASE + '/chat', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ message: 'confirm order ' + orderId, restaurant_id: 'R001' })
+        });
+        if (res.ok) {
+            loadOrders(true);
+            alert('Order confirmed');
+        } else {
+            alert('Error confirming order');
+        }
+    } catch (err) {
+        alert('Error: ' + err.message);
+    }
 }
 
 

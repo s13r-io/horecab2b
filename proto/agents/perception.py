@@ -53,20 +53,25 @@ Available actions:
 - "approve_suggestion": User approves a suggested order
 - "forecast_today": User wants to see today's demand forecast
 - "price_check": User wants to compare prices for an ingredient
+- "place_order": User wants to place/create an order based on previous conversation (e.g., "place the order", "order it", "go ahead and order")
+- "confirm_order": User confirms a proposed order (e.g., "yes", "confirm", "looks good") after seeing order details
 - "query": General question or chat
+
+For "place_order": Examine the FULL conversation history. If forecast was discussed, set context to "forecast". If specific ingredient was discussed, extract ingredient and quantity.
+
+For "confirm_order": Extract order_id if present in context.
 
 Response format (JSON only, no other text):
 {{
-  "action": "low_stock|approve_suggestion|forecast_today|price_check|query",
+  "action": "low_stock|approve_suggestion|forecast_today|price_check|place_order|confirm_order|query",
   "ingredient": "ingredient_name or null",
   "quantity": number or null,
-  "context": "additional context or null",
+  "context": "forecast|ingredient|null",
   "additional_notes": "any notes or null",
-  "order_id": "order ID if mentioned or null"
+  "order_id": "order ID if mentioned or null",
+  "items": [list of items] or null
 }}
 
-If user mentions an order approval, extract order_id if present.
-If quantity not specified, use null.
 Always respond with valid JSON only."""
 
     try:
@@ -96,7 +101,8 @@ Always respond with valid JSON only."""
             quantity=parsed.get("quantity"),
             context=parsed.get("context"),
             additional_notes=parsed.get("additional_notes"),
-            order_id=parsed.get("order_id")
+            order_id=parsed.get("order_id"),
+            items=parsed.get("items")
         )
 
         return intent

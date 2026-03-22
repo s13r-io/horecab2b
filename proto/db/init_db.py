@@ -55,6 +55,8 @@ def init_database():
             total_cost FLOAT,
             status TEXT NOT NULL DEFAULT 'draft',
             vendors_assigned JSON,
+            scheduled_send_time DATETIME,
+            queued_at DATETIME,
             FOREIGN KEY (restaurant_id) REFERENCES restaurants(restaurant_id)
         )
     """)

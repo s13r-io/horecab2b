@@ -13,12 +13,13 @@ from typing import Optional, List
 # ============================================================================
 
 class ParsedIntent(BaseModel):
-    action: str  # low_stock, approve_suggestion, forecast_today, price_check, query
+    action: str  # low_stock, approve_suggestion, forecast_today, price_check, place_order, confirm_order, query
     ingredient: Optional[str] = None
     quantity: Optional[float] = None
     context: Optional[str] = None
     additional_notes: Optional[str] = None
     order_id: Optional[str] = None
+    items: Optional[List[dict]] = None  # for place_order with multiple items from forecast
 
 
 # ============================================================================

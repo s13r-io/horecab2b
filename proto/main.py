@@ -22,6 +22,8 @@ from models.schemas import (
     VendorPriceResponse
 )
 from agents.orchestrator import handle_message, handle_approval
+from scheduler import start_scheduler, stop_scheduler
+import sqlite3
 from agents.routing import route_ingredient
 from agents.forecasting import forecast_all_ingredients
 from utils.data_loader import (
@@ -49,9 +51,13 @@ async def lifespan(app: FastAPI):
     # Startup
     logger.info("Initializing database...")
     init_database()
+    logger.info("Starting scheduler...")
+    start_scheduler()
     logger.info("Database ready. Server starting...")
     yield
     # Shutdown
+    logger.info("Stopping scheduler...")
+    stop_scheduler()
     logger.info("Server shutting down...")
 
 
@@ -667,6 +673,132 @@ async def vendors_dashboard(restaurant_id: str = "R001"):
     except Exception as e:
         logger.error(f"Error in vendors_dashboard: {str(e)}", exc_info=True)
         raise HTTPException(status_code=500, detail="Error loading vendors dashboard")
+
+
+# ============================================================================
+# Order Management Endpoints
+# ============================================================================
+
+@app.get("/order/{order_id}")
+async def get_order(order_id: str):
+    """Get order details by ID."""
+    try:
+        conn = sqlite3.connect("db/prototype.db")
+        cursor = conn.cursor()
+        cursor.execute(
+            """SELECT order_id, restaurant_id, items, total_cost, status, vendors_assigned,
+               scheduled_send_time, queued_at, created_at, updated_at
+               FROM orders WHERE order_id = ?""",
+            (order_id,)
+        )
+        row = cursor.fetchone()
+        conn.close()
+
+        if not row:
+            raise HTTPException(status_code=404, detail="Order not found")
+
+        return {
+            "order_id": row[0],
+            "restaurant_id": row[1],
+            "items": json.loads(row[2]) if row[2] else [],
+            "total_cost": row[3],
+            "status": row[4],
+            "vendors_assigned": json.loads(row[5]) if row[5] else [],
+            "scheduled_send_time": row[6],
+            "queued_at": row[7],
+            "created_at": row[8],
+            "updated_at": row[9]
+        }
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error in get_order: {str(e)}", exc_info=True)
+        raise HTTPException(status_code=500, detail="Error retrieving order")
+
+
+@app.put("/order/{order_id}/cancel")
+async def cancel_order(order_id: str, restaurant_id: str = "R001"):
+    """Cancel a confirmed or queued order."""
+    try:
+        conn = sqlite3.connect("db/prototype.db")
+        cursor = conn.cursor()
+        cursor.execute("SELECT status FROM orders WHERE order_id = ? AND restaurant_id = ?",
+                       (order_id, restaurant_id))
+        row = cursor.fetchone()
+
+        if not row:
+            conn.close()
+            raise HTTPException(status_code=404, detail="Order not found")
+
+        if row[0] not in ("confirmed", "queued"):
+            conn.close()
+            raise HTTPException(status_code=400,
+                              detail=f"Cannot cancel order with status '{row[0]}'")
+
+        from datetime import datetime
+        cursor.execute(
+            "UPDATE orders SET status = 'cancelled', updated_at = ? WHERE order_id = ?",
+            (datetime.now().isoformat(), order_id)
+        )
+        conn.commit()
+        conn.close()
+
+        audit_log(
+            agent_name="API",
+            action="cancel_order",
+            restaurant_id=restaurant_id,
+            order_id=order_id
+        )
+
+        return {"order_id": order_id, "status": "cancelled"}
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error in cancel_order: {str(e)}", exc_info=True)
+        raise HTTPException(status_code=500, detail="Error cancelling order")
+
+
+@app.get("/api/orders")
+async def list_orders(restaurant_id: str = "R001", status: str = None):
+    """List orders, optionally filtered by status."""
+    try:
+        conn = sqlite3.connect("db/prototype.db")
+        cursor = conn.cursor()
+
+        if status:
+            cursor.execute(
+                """SELECT order_id, items, total_cost, status, scheduled_send_time,
+                   queued_at, created_at FROM orders
+                   WHERE restaurant_id = ? AND status = ? ORDER BY created_at DESC LIMIT 50""",
+                (restaurant_id, status)
+            )
+        else:
+            cursor.execute(
+                """SELECT order_id, items, total_cost, status, scheduled_send_time,
+                   queued_at, created_at FROM orders
+                   WHERE restaurant_id = ? ORDER BY created_at DESC LIMIT 50""",
+                (restaurant_id,)
+            )
+
+        rows = cursor.fetchall()
+        conn.close()
+
+        return {
+            "orders": [{
+                "order_id": r[0],
+                "items": json.loads(r[1]) if r[1] else [],
+                "total_cost": r[2],
+                "status": r[3],
+                "scheduled_send_time": r[4],
+                "queued_at": r[5],
+                "created_at": r[6]
+            } for r in rows]
+        }
+
+    except Exception as e:
+        logger.error(f"Error in list_orders: {str(e)}", exc_info=True)
+        raise HTTPException(status_code=500, detail="Error listing orders")
 
 
 # ============================================================================

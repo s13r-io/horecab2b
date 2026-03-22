@@ -52,6 +52,16 @@ async function sendMessage() {
             addApproveButton(data.data.order_id);
         }
 
+        // Handle order confirmation action
+        if (data.action === 'order_confirmation' && data.data?.order_id) {
+            addConfirmCancelButtons(data.data.order_id);
+        }
+
+        // Handle order queued action
+        if (data.action === 'order_queued' && data.data?.order_id) {
+            addQueuedOrderMessage(data.data.order_id, data.data.scheduled_send_time);
+        }
+
     } catch (error) {
         removeTypingIndicator();
         addBubble('assistant', `Error: ${error.message}`);
@@ -178,6 +188,76 @@ function addApproveButton(orderId) {
     btn.onclick = () => approveOrder(orderId);
 
     actionDiv.appendChild(btn);
+    lastBubble.appendChild(actionDiv);
+}
+
+
+/**
+ * Add confirm and cancel buttons to last assistant bubble
+ */
+function addConfirmCancelButtons(orderId) {
+    const lastBubble = chatContainer.lastElementChild?.querySelector('.bubble');
+    if (!lastBubble) return;
+
+    const actionDiv = document.createElement('div');
+    actionDiv.className = 'action-buttons';
+
+    const confirmBtn = document.createElement('button');
+    confirmBtn.className = 'btn-action btn-confirm';
+    confirmBtn.textContent = 'Confirm Order';
+    confirmBtn.onclick = () => {
+        messageInput.value = `confirm order ${orderId}`;
+        sendMessage();
+    };
+
+    const cancelBtn = document.createElement('button');
+    cancelBtn.className = 'btn-action btn-cancel';
+    cancelBtn.textContent = 'Cancel';
+    cancelBtn.onclick = () => cancelOrder(orderId);
+
+    actionDiv.appendChild(confirmBtn);
+    actionDiv.appendChild(cancelBtn);
+    lastBubble.appendChild(actionDiv);
+}
+
+
+/**
+ * Cancel an order
+ */
+async function cancelOrder(orderId) {
+    try {
+        const response = await fetch(`${API_BASE}/order/${orderId}/cancel?restaurant_id=${RESTAURANT_ID}`, {
+            method: 'PUT'
+        });
+
+        if (response.ok) {
+            addBubble('assistant', `✅ Order ${orderId} has been cancelled.`);
+        } else {
+            const error = await response.json();
+            addBubble('assistant', `❌ Error: ${error.detail || 'Could not cancel order'}`);
+        }
+    } catch (error) {
+        addBubble('assistant', `❌ Error: ${error.message}`);
+    }
+}
+
+
+/**
+ * Show queued order message with scheduled send time
+ */
+function addQueuedOrderMessage(orderId, scheduledSendTime) {
+    const lastBubble = chatContainer.lastElementChild?.querySelector('.bubble');
+    if (!lastBubble) return;
+
+    const actionDiv = document.createElement('div');
+    actionDiv.className = 'action-buttons';
+
+    const cancelBtn = document.createElement('button');
+    cancelBtn.className = 'btn-action btn-cancel';
+    cancelBtn.textContent = 'Cancel Order';
+    cancelBtn.onclick = () => cancelOrder(orderId);
+
+    actionDiv.appendChild(cancelBtn);
     lastBubble.appendChild(actionDiv);
 }
 

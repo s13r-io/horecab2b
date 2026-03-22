@@ -49,6 +49,10 @@ def handle_message(message: str, restaurant_id: str) -> ChatResponse:
         return _handle_forecast_today(restaurant_id)
     elif intent.action == "price_check":
         return _handle_price_check(intent, restaurant_id)
+    elif intent.action == "place_order":
+        return _handle_place_order(intent, restaurant_id)
+    elif intent.action == "confirm_order":
+        return _handle_confirm_order(intent, restaurant_id)
     else:
         return _handle_general_query(message, restaurant_id)
 
@@ -477,6 +481,216 @@ def handle_approval(order_id: str, restaurant_id: str) -> ApproveResponse:
             messages=[],
             error=str(e)
         )
+
+
+def _handle_place_order(intent, restaurant_id: str) -> ChatResponse:
+    """Handle place_order intent - create order from context."""
+    config = get_demo_config()
+    target_date = config["current_date"]
+    current_time = config.get("current_time", "15:30")
+
+    try:
+        # Determine what to order based on context
+        if intent.context == "forecast" or (not intent.ingredient and not intent.items):
+            # Forecast context - order all forecasted items
+            forecasts = forecast_all_ingredients(target_date)
+            if not forecasts:
+                return ChatResponse(
+                    response_text="📊 No items need ordering based on today's forecast.",
+                    action="query"
+                )
+        elif intent.ingredient:
+            # Single ingredient context
+            qty = intent.quantity
+            if qty is None:
+                forecast = forecast_ingredient(intent.ingredient, target_date)
+                qty = forecast.forecast_quantity
+                if qty <= 0:
+                    return ChatResponse(
+                        response_text=f"✓ {forecast.ingredient_name} is well-stocked.",
+                        action="query"
+                    )
+                forecasts = [forecast]
+            else:
+                forecasts = [forecast_ingredient(intent.ingredient, target_date)]
+        else:
+            return ChatResponse(
+                response_text="What would you like to order? Say 'order the forecast' or specify an ingredient.",
+                action="query"
+            )
+
+        # Route to vendors
+        assignments = route_order(forecasts, target_date)
+        total_cost = sum(a.estimated_cost for a in assignments)
+
+        # Compute send schedule
+        send_schedule = _compute_send_schedule(assignments, current_time, target_date)
+
+        # Create order with status="confirmed"
+        order_id = generate_order_id()
+        earliest_send_time = min([s["send_time"] for s in send_schedule.values()]) if send_schedule else None
+
+        all_items = []
+        for forecast in forecasts:
+            all_items.append({
+                "sku": forecast.sku,
+                "ingredient_name": forecast.ingredient_name,
+                "quantity": forecast.forecast_quantity,
+                "unit": forecast.unit
+            })
+
+        conn = sqlite3.connect("db/prototype.db")
+        cursor = conn.cursor()
+        cursor.execute(
+            """INSERT INTO orders (order_id, restaurant_id, items, total_cost, status,
+               vendors_assigned, scheduled_send_time)
+               VALUES (?, ?, ?, ?, ?, ?, ?)""",
+            (order_id, restaurant_id, json.dumps(all_items), total_cost, "confirmed",
+             json.dumps([{
+                 "vendor_id": a.vendor_id,
+                 "vendor_name": a.vendor_name,
+                 "items": a.items,
+                 "estimated_cost": a.estimated_cost,
+                 "is_bridge_order": a.is_bridge_order
+             } for a in assignments]),
+             earliest_send_time)
+        )
+        conn.commit()
+        conn.close()
+
+        # Build confirmation text
+        response_text = _build_order_confirmation_text(order_id, forecasts, assignments, send_schedule, total_cost)
+
+        return ChatResponse(
+            response_text=response_text,
+            action="order_confirmation",
+            data={"order_id": order_id, "total_cost": total_cost}
+        )
+
+    except Exception as e:
+        audit_log("AG-ORCH", "place_order_error", error=str(e), restaurant_id=restaurant_id)
+        return ChatResponse(
+            response_text=f"❌ Error creating order: {str(e)}",
+            action="query"
+        )
+
+
+def _handle_confirm_order(intent, restaurant_id: str) -> ChatResponse:
+    """Handle confirm_order intent - transition confirmed→queued."""
+    order_id = intent.order_id or _get_latest_confirmed_order(restaurant_id)
+
+    if not order_id:
+        return ChatResponse(
+            response_text="❌ No pending order to confirm.",
+            action="query"
+        )
+
+    try:
+        conn = sqlite3.connect("db/prototype.db")
+        cursor = conn.cursor()
+        cursor.execute("SELECT status, scheduled_send_time FROM orders WHERE order_id = ?", (order_id,))
+        row = cursor.fetchone()
+
+        if not row or row[0] != "confirmed":
+            conn.close()
+            return ChatResponse(
+                response_text=f"❌ Order {order_id} is not awaiting confirmation.",
+                action="query"
+            )
+
+        now = datetime.now().isoformat()
+        cursor.execute(
+            "UPDATE orders SET status = 'queued', queued_at = ?, updated_at = ? WHERE order_id = ?",
+            (now, now, order_id)
+        )
+        conn.commit()
+        conn.close()
+
+        scheduled = row[1]
+        return ChatResponse(
+            response_text=f"✅ Order {order_id} is now queued!\n📅 Vendor messages will be sent at {scheduled}",
+            action="order_queued",
+            data={"order_id": order_id, "scheduled_send_time": scheduled, "status": "queued"}
+        )
+
+    except Exception as e:
+        audit_log("AG-ORCH", "confirm_order_error", error=str(e), order_id=order_id)
+        return ChatResponse(
+            response_text=f"❌ Error confirming order: {str(e)}",
+            action="query"
+        )
+
+
+def _compute_send_schedule(assignments, current_time: str, target_date: str) -> dict:
+    """Compute when to send each vendor's order."""
+    from datetime import timedelta
+    from utils.data_loader import get_vendor_by_id
+
+    schedule = {}
+    current_dt = datetime.strptime(f"{target_date} {current_time}", "%Y-%m-%d %H:%M")
+
+    for assignment in assignments:
+        vendor = get_vendor_by_id(assignment.vendor_id)
+        cutoff_str = vendor.get("order_cutoff_time", "16:00")
+        cutoff_dt = datetime.strptime(f"{target_date} {cutoff_str}", "%Y-%m-%d %H:%M")
+
+        # Target send time = cutoff - 15 min
+        send_dt = cutoff_dt - timedelta(minutes=15)
+        minutes_until_cutoff = (cutoff_dt - current_dt).total_seconds() / 60
+
+        if minutes_until_cutoff < 0:
+            # Cutoff already passed
+            send_dt = send_dt + timedelta(days=1)
+            note = "next-day (cutoff passed)"
+        elif minutes_until_cutoff < 30:
+            # Less than 30 min to cutoff
+            send_dt = current_dt
+            note = "immediate (cutoff imminent)"
+        else:
+            note = "scheduled"
+
+        schedule[assignment.vendor_id] = {
+            "send_time": send_dt.strftime("%Y-%m-%d %H:%M"),
+            "cutoff": cutoff_str,
+            "note": note
+        }
+
+    return schedule
+
+
+def _build_order_confirmation_text(order_id: str, forecasts, assignments, send_schedule: dict, total_cost: float) -> str:
+    """Build order confirmation message."""
+    text = f"**📦 Order Summary** (ID: {order_id})\n\n"
+    text += "**Items:**\n"
+    for forecast in forecasts:
+        text += f"• {forecast.ingredient_name}: {forecast.forecast_quantity} {forecast.unit}\n"
+
+    text += f"\n**Vendor Routing:**\n"
+    for a in assignments:
+        sched = send_schedule.get(a.vendor_id, {})
+        send_time = sched.get("send_time", "")
+        send_note = sched.get("note", "")
+        text += f"• {a.vendor_name}: {len(a.items)} item(s), ₹{a.estimated_cost:.2f} | Send: {send_time} ({send_note})\n"
+
+    text += f"\n**Total Cost:** ₹{total_cost:.2f}\n\n"
+    text += "Say **'confirm'** to queue this order, or **'cancel'** to discard."
+    return text
+
+
+def _get_latest_confirmed_order(restaurant_id: str) -> str:
+    """Get most recent order with status='confirmed'."""
+    try:
+        conn = sqlite3.connect("db/prototype.db")
+        cursor = conn.cursor()
+        cursor.execute(
+            "SELECT order_id FROM orders WHERE restaurant_id = ? AND status = 'confirmed' ORDER BY created_at DESC LIMIT 1",
+            (restaurant_id,)
+        )
+        row = cursor.fetchone()
+        conn.close()
+        return row[0] if row else None
+    except Exception:
+        return None
 
 
 def _get_latest_suggested_order(restaurant_id: str) -> str:
