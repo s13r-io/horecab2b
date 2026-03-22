@@ -1,5 +1,6 @@
 {
-  "current_date": "2026-03-19",
+  "current_date": "2026-03-22",
+  "current_time": "15:30",
   "timezone": "Asia/Kolkata",
   "weather_today": "sunny",
   "is_event_today": false,
@@ -12,11 +13,12 @@
   "weather_history": {
     "2026-02-18": "rainy",
     "2026-03-05": "rainy",
-    "2026-03-12": "rainy"
+    "2026-03-12": "rainy",
+    "2026-03-19": "rainy"
   },
   "pos_data_range": {
-    "start_date": "2026-02-17",
-    "end_date": "2026-03-18",
+    "start_date": "2026-02-20",
+    "end_date": "2026-03-21",
     "total_days": 30
   }
 }

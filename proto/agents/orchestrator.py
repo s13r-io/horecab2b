@@ -87,7 +87,23 @@ def _handle_low_stock(intent, restaurant_id: str) -> ChatResponse:
     forecasts = [forecast]
     assignments = route_order(forecasts, target_date)
 
+    # Detect split orders
+    bridge_assignments = [a for a in assignments if a.is_bridge_order]
+    main_assignments = [a for a in assignments if not a.is_bridge_order]
+
+    # Build items list for DB from all assignments
+    all_items = []
+    for a in assignments:
+        for item in a.items:
+            all_items.append({
+                "sku": item["sku"],
+                "ingredient_name": item["ingredient_name"],
+                "quantity": item["quantity"],
+                "unit": item["unit"]
+            })
+
     # Save to database
+    total_cost = sum(a.estimated_cost for a in assignments)
     try:
         conn = sqlite3.connect("db/prototype.db")
         cursor = conn.cursor()
@@ -99,19 +115,15 @@ def _handle_low_stock(intent, restaurant_id: str) -> ChatResponse:
             (
                 order_id,
                 restaurant_id,
-                json.dumps([{
-                    "sku": forecast.sku,
-                    "ingredient_name": forecast.ingredient_name,
-                    "quantity": forecast.forecast_quantity,
-                    "unit": forecast.unit
-                }]),
-                sum(a.estimated_cost for a in assignments),
+                json.dumps(all_items),
+                total_cost,
                 "suggested",
                 json.dumps([{
                     "vendor_id": a.vendor_id,
                     "vendor_name": a.vendor_name,
                     "items": a.items,
-                    "estimated_cost": a.estimated_cost
+                    "estimated_cost": a.estimated_cost,
+                    "is_bridge_order": a.is_bridge_order
                 } for a in assignments])
             )
         )
@@ -121,17 +133,48 @@ def _handle_low_stock(intent, restaurant_id: str) -> ChatResponse:
         audit_log("AG-ORCH", "create_order_error", error=str(e), order_id=order_id)
 
     # Format response
-    total_cost = sum(a.estimated_cost for a in assignments)
-    vendor_names = ", ".join([a.vendor_name for a in assignments])
+    if bridge_assignments:
+        # Split order response
+        bridge = bridge_assignments[0]
+        main = main_assignments[0] if main_assignments else None
+        bridge_qty = bridge.items[0]["quantity"] if bridge.items else 0
+        main_qty = main.items[0]["quantity"] if main and main.items else 0
 
-    response_text = (
-        f"📦 **Order Suggested** (ID: {order_id})\n\n"
-        f"**Item:** {forecast.ingredient_name}\n"
-        f"**Quantity:** {forecast.forecast_quantity} {forecast.unit}\n"
-        f"**Assigned to:** {vendor_names}\n"
-        f"**Estimated Cost:** ₹{total_cost:.2f}\n\n"
-        f"✓ Ready to approve. Click 'Approve' to dispatch."
-    )
+        response_text = (
+            f"🚨 **Split Order Suggested** (ID: {order_id})\n\n"
+            f"**Item:** {forecast.ingredient_name}\n\n"
+            f"⚡ **Bridge Order** (urgent):\n"
+            f"  • {bridge_qty} {forecast.unit} from {bridge.vendor_name}\n"
+            f"  • Cost: ₹{bridge.estimated_cost:.2f}\n"
+            f"  • Delivers faster to cover until main order arrives\n\n"
+        )
+        if main:
+            response_text += (
+                f"📦 **Main Order:**\n"
+                f"  • {main_qty} {forecast.unit} from {main.vendor_name}\n"
+                f"  • Cost: ₹{main.estimated_cost:.2f}\n"
+                f"  • Better price, longer lead time\n\n"
+            )
+        response_text += (
+            f"**Total Cost:** ₹{total_cost:.2f}\n\n"
+            f"✓ Ready to approve. Click 'Approve' to dispatch."
+        )
+    else:
+        # Single order response
+        vendor_names = ", ".join([a.vendor_name for a in assignments])
+        actual_qty = main_assignments[0].items[0]["quantity"] if main_assignments and main_assignments[0].items else forecast.forecast_quantity
+        moq_note = ""
+        if actual_qty > forecast.forecast_quantity:
+            moq_note = f" (adjusted from {forecast.forecast_quantity} {forecast.unit} to meet vendor MOQ)"
+
+        response_text = (
+            f"📦 **Order Suggested** (ID: {order_id})\n\n"
+            f"**Item:** {forecast.ingredient_name}\n"
+            f"**Quantity:** {actual_qty} {forecast.unit}{moq_note}\n"
+            f"**Assigned to:** {vendor_names}\n"
+            f"**Estimated Cost:** ₹{total_cost:.2f}\n\n"
+            f"✓ Ready to approve. Click 'Approve' to dispatch."
+        )
 
     return ChatResponse(
         response_text=response_text,
@@ -142,7 +185,8 @@ def _handle_low_stock(intent, restaurant_id: str) -> ChatResponse:
             "vendor_assignments": [{
                 "vendor_id": a.vendor_id,
                 "vendor_name": a.vendor_name,
-                "estimated_cost": a.estimated_cost
+                "estimated_cost": a.estimated_cost,
+                "is_bridge_order": a.is_bridge_order
             } for a in assignments]
         }
     )
@@ -264,7 +308,9 @@ def _handle_price_check(intent, restaurant_id: str) -> ChatResponse:
     response_text = f"💰 **Price Check: {intent.ingredient}**\n\n"
     for i, opt in enumerate(options, 1):
         recommended = "✓ Recommended" if opt.is_recommended else ""
-        response_text += f"{i}. {opt.vendor_name}: ₹{opt.price_per_unit}/unit {recommended}\n"
+        moq_text = f" (MOQ: {opt.moq})" if opt.moq > 0 else ""
+        lead_text = f", {opt.effective_lead_days}d lead"
+        response_text += f"{i}. {opt.vendor_name}: ₹{opt.price_per_unit}/unit{moq_text}{lead_text} {recommended}\n"
 
     return ChatResponse(
         response_text=response_text,

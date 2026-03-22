@@ -14,7 +14,9 @@ from utils.data_loader import (
     get_last_n_days_sales,
     get_current_inventory,
     get_ingredient_unit,
-    get_demo_config
+    get_demo_config,
+    get_vendors_for_sku,
+    compute_effective_lead_days
 )
 
 
@@ -103,22 +105,37 @@ def forecast_ingredient(sku: str, target_date: str, num_days: int = 7) -> Ingred
         if 0 <= days_until <= 2:
             event_multiplier *= event["multiplier"]
 
-    # Safety stock (+15%)
-    safety_multiplier = 1.15
+    # Adjusted daily need with multipliers (no safety stock yet)
+    adjusted_daily_need = base_daily_need * weekend_multiplier * event_multiplier
 
-    # Forecast with all multipliers
-    forecast_qty = base_daily_need * weekend_multiplier * event_multiplier * safety_multiplier
+    # Compute effective lead time (cutoff-aware, best vendor)
+    config_time = config.get("current_time", "12:00")
+    vendors = get_vendors_for_sku(sku, target_date)
+    if vendors:
+        lead_time = min(compute_effective_lead_days(v, config_time) for v in vendors)
+    else:
+        lead_time = 1  # fallback
 
-    # Subtract current inventory
+    # Order enough to cover:
+    #   - consumption during lead time (until delivery arrives)
+    #   - consumption during the next delivery cycle (lead_time more days)
+    #   - 1 day safety buffer
+    # Target stock = (2 * lead_time + 1) * daily_need
+    # Order = target - current_inventory
+    coverage_days = 2 * lead_time + 1
+    target_stock = adjusted_daily_need * coverage_days
+
     current_inv = get_current_inventory(sku)
-    final_qty = max(0.0, forecast_qty - current_inv)
+    final_qty = max(0.0, target_stock - current_inv)
     final_qty = round(final_qty, 1)
 
     confidence = 0.85 if len(daily_quantities) >= 5 else 0.70
     reasoning = (
         f"Based on {len(daily_quantities)}-day average. "
-        f"Base need: {base_daily_need:.1f}kg. "
-        f"Multipliers: weekend={weekend_multiplier}, event={event_multiplier}, safety=1.15. "
+        f"Adjusted daily need: {adjusted_daily_need:.1f}kg. "
+        f"Lead time: {lead_time}d. Coverage: {coverage_days}d "
+        f"({lead_time}d lead + {lead_time}d next cycle + 1d buffer). "
+        f"Target stock: {target_stock:.1f}kg. "
         f"Current inventory: {current_inv}kg."
     )
 

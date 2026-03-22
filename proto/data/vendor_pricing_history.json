@@ -8,10 +8,18 @@
       "whatsapp": "9876543210",
       "delivery_time": "6:00 AM",
       "delivery_days": 1,
+      "order_cutoff_time": "14:00",
       "reliability_score": 0.92,
       "quality_score": 0.88,
       "credit_available": true,
       "credit_days": 7,
+      "min_order_qty": {
+        "tomato": 3,
+        "onion": 5,
+        "ginger_garlic": 1,
+        "coriander_leaves": 0.5,
+        "green_chili": 0.5
+      },
       "comm_preferences": {
         "channel": "whatsapp",
         "format": "text",
@@ -27,10 +35,26 @@
       "whatsapp": "9876543211",
       "delivery_time": "7:00 AM",
       "delivery_days": 1,
+      "order_cutoff_time": "16:00",
       "reliability_score": 0.95,
       "quality_score": 0.90,
       "credit_available": true,
       "credit_days": 10,
+      "min_order_qty": {
+        "tomato": 5,
+        "onion": 5,
+        "ginger_garlic": 1,
+        "paneer": 2,
+        "butter": 1,
+        "cream": 1,
+        "chicken_breast": 3,
+        "black_lentils": 5,
+        "red_lentils": 5,
+        "yogurt": 2,
+        "rice_basmati": 5,
+        "cooking_oil": 5,
+        "wheat_flour": 5
+      },
       "comm_preferences": {
         "channel": "whatsapp",
         "format": "structured",
@@ -46,10 +70,14 @@
       "whatsapp": "9876543212",
       "delivery_time": "6:30 AM",
       "delivery_days": 1,
+      "order_cutoff_time": "13:00",
       "reliability_score": 0.88,
       "quality_score": 0.85,
       "credit_available": true,
       "credit_days": 5,
+      "min_order_qty": {
+        "chicken_breast": 5
+      },
       "comm_preferences": {
         "channel": "whatsapp",
         "format": "text",
@@ -65,10 +93,17 @@
       "whatsapp": "9876543213",
       "delivery_time": "7:30 AM",
       "delivery_days": 1,
+      "order_cutoff_time": "15:00",
       "reliability_score": 0.93,
       "quality_score": 0.92,
       "credit_available": true,
       "credit_days": 3,
+      "min_order_qty": {
+        "paneer": 1,
+        "butter": 0.5,
+        "cream": 0.5,
+        "yogurt": 1
+      },
       "comm_preferences": {
         "channel": "whatsapp",
         "format": "text",
@@ -84,10 +119,23 @@
       "whatsapp": "9876543214",
       "delivery_time": "8:00 AM",
       "delivery_days": 2,
+      "order_cutoff_time": "12:00",
       "reliability_score": 0.90,
       "quality_score": 0.87,
       "credit_available": true,
       "credit_days": 15,
+      "min_order_qty": {
+        "wheat_flour": 10,
+        "rice_basmati": 10,
+        "cooking_oil": 5,
+        "salt": 5,
+        "cumin_powder": 1,
+        "turmeric_powder": 1,
+        "red_chili_powder": 1,
+        "garam_masala": 0.5,
+        "coriander_powder": 1,
+        "black_pepper": 0.5
+      },
       "comm_preferences": {
         "channel": "whatsapp",
         "format": "structured",
@@ -414,6 +462,71 @@
             "garam_masala": 500,
             "black_lentils": 132,
             "red_lentils": 88
+          }
+        }
+      ]
+    },
+    {
+      "snapshot_date": "2026-03-22",
+      "week": 6,
+      "note": "Post-Holi normalization - prices easing back down",
+      "prices": [
+        {
+          "vendor_id": "V001",
+          "items": {
+            "tomato": 38,
+            "onion": 28,
+            "ginger_garlic": 195,
+            "coriander_leaves": 72,
+            "green_chili": 55
+          }
+        },
+        {
+          "vendor_id": "V002",
+          "items": {
+            "tomato": 42,
+            "onion": 32,
+            "ginger_garlic": 205,
+            "paneer": 430,
+            "butter": 480,
+            "cream": 410,
+            "black_lentils": 130,
+            "red_lentils": 90,
+            "chicken_breast": 305,
+            "yogurt": 68,
+            "rice_basmati": 108,
+            "cooking_oil": 155,
+            "wheat_flour": 45
+          }
+        },
+        {
+          "vendor_id": "V003",
+          "items": {
+            "chicken_breast": 295
+          }
+        },
+        {
+          "vendor_id": "V004",
+          "items": {
+            "paneer": 420,
+            "butter": 470,
+            "cream": 400,
+            "yogurt": 64
+          }
+        },
+        {
+          "vendor_id": "V005",
+          "items": {
+            "wheat_flour": 40,
+            "rice_basmati": 100,
+            "cooking_oil": 148,
+            "salt": 20,
+            "cumin_powder": 350,
+            "turmeric_powder": 198,
+            "red_chili_powder": 305,
+            "garam_masala": 460,
+            "black_lentils": 122,
+            "red_lentils": 82
           }
         }
       ]

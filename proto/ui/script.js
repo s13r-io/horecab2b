@@ -35,7 +35,7 @@ async function sendMessage() {
 
         if (!response.ok) {
             const error = await response.json();
-            addBubble('assistant', `❌ Error: ${error.detail || 'Unknown error'}`);
+            addBubble('assistant', `Error: ${error.detail || 'Unknown error'}`);
             return;
         }
 
@@ -54,7 +54,7 @@ async function sendMessage() {
 
     } catch (error) {
         removeTypingIndicator();
-        addBubble('assistant', `❌ Error: ${error.message}`);
+        addBubble('assistant', `Error: ${error.message}`);
     }
 }
 
@@ -64,35 +64,35 @@ async function sendMessage() {
  */
 async function runForecast() {
     forecastBtn.disabled = true;
-    forecastBtn.textContent = '⏳ Loading...';
+    forecastBtn.textContent = 'Loading...';
 
-    addBubble('assistant', '📊 Generating forecast...');
+    addBubble('assistant', 'Generating forecast...');
 
     try {
         const response = await fetch(`${API_BASE}/forecast-today?restaurant_id=${RESTAURANT_ID}`);
 
         if (!response.ok) {
             const error = await response.json();
-            addBubble('assistant', `❌ Error: ${error.detail || 'Could not generate forecast'}`);
+            addBubble('assistant', `Error: ${error.detail || 'Could not generate forecast'}`);
             return;
         }
 
         const data = await response.json();
 
         // Format forecast response
-        let forecastText = '📊 **Today\'s Demand Forecast**\n\n';
+        let forecastText = '**Today\'s Demand Forecast**\n\n';
         for (const forecast of data.forecasts) {
-            forecastText += `• ${forecast.ingredient_name}: ${forecast.forecast_quantity} ${forecast.unit}\n`;
+            forecastText += `* ${forecast.ingredient_name}: ${forecast.forecast_quantity} ${forecast.unit}\n`;
         }
-        forecastText += `\n**Estimated Cost:** ₹${data.estimated_total_cost.toFixed(2)}`;
+        forecastText += `\n**Estimated Cost:** Rs.${data.estimated_total_cost.toFixed(2)}`;
 
         addBubble('assistant', forecastText);
 
     } catch (error) {
-        addBubble('assistant', `❌ Error: ${error.message}`);
+        addBubble('assistant', `Error: ${error.message}`);
     } finally {
         forecastBtn.disabled = false;
-        forecastBtn.textContent = '📊 Run Morning Forecast';
+        forecastBtn.textContent = 'Run Morning Forecast';
     }
 }
 
@@ -104,7 +104,7 @@ async function approveOrder(orderId) {
     const approveBtn = document.querySelector(`[data-order-id="${orderId}"]`);
     if (approveBtn) {
         approveBtn.disabled = true;
-        approveBtn.textContent = '⏳ Approving...';
+        approveBtn.textContent = 'Approving...';
     }
 
     try {
@@ -116,20 +116,20 @@ async function approveOrder(orderId) {
 
         if (!response.ok) {
             const error = await response.json();
-            addBubble('assistant', `❌ Error: ${error.detail || 'Could not approve order'}`);
+            addBubble('assistant', `Error: ${error.detail || 'Could not approve order'}`);
             return;
         }
 
         const data = await response.json();
 
         if (data.status === 'dispatched') {
-            addBubble('assistant', `✅ Order ${orderId} approved and dispatched!\n\n📤 Messages sent to vendors.`);
+            addBubble('assistant', `Order ${orderId} approved and dispatched!\n\nMessages sent to vendors.`);
         } else if (data.error) {
-            addBubble('assistant', `❌ Error: ${data.error}`);
+            addBubble('assistant', `Error: ${data.error}`);
         }
 
     } catch (error) {
-        addBubble('assistant', `❌ Error: ${error.message}`);
+        addBubble('assistant', `Error: ${error.message}`);
     }
 }
 
@@ -173,7 +173,7 @@ function addApproveButton(orderId) {
 
     const btn = document.createElement('button');
     btn.className = 'btn-action';
-    btn.textContent = '✓ Approve Order';
+    btn.textContent = 'Approve Order';
     btn.dataset.orderId = orderId;
     btn.onclick = () => approveOrder(orderId);
 
@@ -192,7 +192,7 @@ function showTypingIndicator() {
 
     const bubble = document.createElement('div');
     bubble.className = 'bubble';
-    bubble.innerHTML = '<span>⋯</span>';
+    bubble.innerHTML = '<span>...</span>';
 
     message.appendChild(bubble);
     chatContainer.appendChild(message);
@@ -227,6 +227,6 @@ forecastBtn.addEventListener('click', runForecast);
  * Initialize
  */
 window.addEventListener('load', () => {
-    addBubble('assistant', '👋 Welcome to NAM Procurement Platform!\n\nI\'m your AI procurement assistant. You can:\n• Report low stock (e.g., "We\'re out of chicken")\n• Check prices (e.g., "What\'s the price of tomato?")\n• Run the morning forecast\n• Ask any procurement questions');
+    addBubble('assistant', 'Welcome to NAM Procurement Platform!\n\nI\'m your AI procurement assistant. You can:\n* Report low stock (e.g., "We\'re out of chicken")\n* Check prices (e.g., "What\'s the price of tomato?")\n* Run the morning forecast\n* Ask any procurement questions');
     messageInput.focus();
 });

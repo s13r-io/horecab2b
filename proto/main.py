@@ -24,7 +24,14 @@ from models.schemas import (
 from agents.orchestrator import handle_message, handle_approval
 from agents.routing import route_ingredient
 from agents.forecasting import forecast_all_ingredients
-from utils.data_loader import get_demo_config, get_ingredient_unit
+from utils.data_loader import (
+    get_demo_config, get_ingredient_unit, get_all_ingredients,
+    get_all_recipes, get_last_n_days_sales, get_current_inventory,
+    get_vendors_for_sku, get_all_inventory,
+    compute_effective_lead_days, get_latest_price_for_vendor_sku,
+    get_avg_price_for_vendor_sku, _load_vendor_pricing,
+    get_moq_for_vendor_sku
+)
 from utils.helpers import audit_log
 
 
@@ -293,7 +300,8 @@ async def vendor_prices(ingredient: str, quantity: float = 1.0, restaurant_id: s
                     "score": o.score,
                     "delivery_time": o.delivery_time,
                     "credit_days": o.credit_days,
-                    "is_recommended": o.is_recommended
+                    "is_recommended": o.is_recommended,
+                    "effective_lead_days": o.effective_lead_days
                 }
                 for o in options
             ]
@@ -310,6 +318,355 @@ async def vendor_prices(ingredient: str, quantity: float = 1.0, restaurant_id: s
             error=str(e)
         )
         raise HTTPException(status_code=500, detail="Error checking vendor prices")
+
+
+# ============================================================================
+# Inventory Dashboard Endpoint
+# ============================================================================
+
+@app.get("/api/inventory-dashboard")
+async def inventory_dashboard(restaurant_id: str = "R001"):
+    """
+    Returns enriched inventory data for all ingredients.
+    Includes avg daily consumption, days of stock, cutoff-aware lead times,
+    and per-vendor details (cutoff status, earliest delivery, pricing).
+    """
+    try:
+        from datetime import datetime, timedelta
+
+        config = get_demo_config()
+        current_date = config["current_date"]
+        current_time = config.get("current_time", "12:00")
+        current_date_obj = datetime.strptime(current_date, "%Y-%m-%d")
+        ingredients = get_all_ingredients()
+        recipes = get_all_recipes()
+        sales_days = get_last_n_days_sales(7, current_date)
+        num_days = len(sales_days) if sales_days else 1
+
+        # Compute weekend & event multipliers (same as forecasting agent)
+        weekday = current_date_obj.weekday()
+        weekend_multiplier = 1.35 if weekday >= 4 else 1.0
+        event_multiplier = 1.0
+        for event in config.get("upcoming_events", []):
+            event_date = datetime.strptime(event["date"], "%Y-%m-%d")
+            days_until = (event_date - current_date_obj).days
+            if 0 <= days_until <= 2:
+                event_multiplier *= event.get("demand_multiplier", 1.0)
+
+        # Weighted average weights (same as forecasting agent)
+        weights = [1.0, 1.0, 1.0, 1.0, 1.1, 1.2, 1.4]
+
+        # Build lookup: sku -> list of (dish_id, qty_per_serving)
+        sku_recipe_map = {}
+        for recipe in recipes:
+            for ing in recipe.get("ingredients", []):
+                sku = ing["sku"]
+                if sku not in sku_recipe_map:
+                    sku_recipe_map[sku] = []
+                sku_recipe_map[sku].append({
+                    "dish_id": recipe["dish_id"],
+                    "qty_per_serving": ing["quantity"]
+                })
+
+        result_ingredients = []
+        for ingredient in ingredients:
+            sku = ingredient["sku"]
+
+            # Daily consumption from POS data (weighted average, same as forecast)
+            daily_quantities = []
+            for day in sales_days:
+                day_qty = 0.0
+                for sale in day.get("sales", []):
+                    for mapping in sku_recipe_map.get(sku, []):
+                        if sale["dish_id"] == mapping["dish_id"]:
+                            day_qty += sale["quantity"] * mapping["qty_per_serving"]
+                daily_quantities.append(day_qty)
+
+            weights_used = weights[-len(daily_quantities):] if daily_quantities else []
+            if weights_used:
+                weighted_sum = sum(d * w for d, w in zip(daily_quantities, weights_used))
+                base_daily = weighted_sum / sum(weights_used)
+            else:
+                base_daily = 0.0
+
+            # Apply multipliers to get adjusted daily consumption
+            adjusted_daily = round(base_daily * weekend_multiplier * event_multiplier, 2)
+
+            # Current inventory
+            qty_on_hand = get_current_inventory(sku)
+
+            # Days of stock (based on adjusted daily consumption)
+            days_of_stock = round(qty_on_hand / adjusted_daily, 1) if adjusted_daily > 0 else None
+
+            # Per-vendor details with cutoff-aware lead times
+            vendors = get_vendors_for_sku(sku, current_date)
+            vendor_details = []
+            for v in vendors:
+                eff_lead = compute_effective_lead_days(v, current_time)
+                cutoff = v.get("order_cutoff_time", "16:00")
+                cutoff_missed = current_time >= cutoff
+                delivery_date_obj = current_date_obj + timedelta(days=eff_lead)
+                delivery_date_str = delivery_date_obj.strftime("%b %d")
+
+                if eff_lead == 1:
+                    earliest_delivery_str = f"Tomorrow, {v.get('delivery_time', '')}"
+                else:
+                    earliest_delivery_str = f"{delivery_date_str}, {v.get('delivery_time', '')}"
+
+                vendor_details.append({
+                    "vendor_id": v["vendor_id"],
+                    "vendor_name": v["vendor_name"],
+                    "reliability_score": v.get("reliability_score", 0),
+                    "order_cutoff_time": cutoff,
+                    "cutoff_missed": cutoff_missed,
+                    "delivery_time": v.get("delivery_time", ""),
+                    "effective_lead_days": eff_lead,
+                    "earliest_delivery": earliest_delivery_str,
+                    "latest_price": get_latest_price_for_vendor_sku(v["vendor_id"], sku),
+                    "avg_price": get_avg_price_for_vendor_sku(v["vendor_id"], sku),
+                    "moq": get_moq_for_vendor_sku(v["vendor_id"], sku),
+                })
+
+            # Sort vendors: cutoff not missed first, then by effective lead days
+            vendor_details.sort(key=lambda x: (x["cutoff_missed"], x["effective_lead_days"]))
+
+            # Earliest delivery across all vendors
+            if vendor_details:
+                earliest_lead = min(vd["effective_lead_days"] for vd in vendor_details)
+            else:
+                earliest_lead = None
+
+            # Status based on days_of_stock vs earliest effective lead time
+            # Critical: stock runs out before delivery arrives
+            # Warning: stock < lead_time + 1 day (1 day safety buffer)
+            if days_of_stock is None or adjusted_daily == 0:
+                status = "ok"
+            elif earliest_lead is not None and days_of_stock <= earliest_lead:
+                status = "critical"
+            elif earliest_lead is not None and days_of_stock <= earliest_lead + 1:
+                status = "warning"
+            else:
+                status = "ok"
+
+            # Forecast order quantity (same formula as forecasting agent)
+            # Target = (2 * lead_time + 1) * adjusted_daily - current_inventory
+            # Only show order for critical/warning items (ensures consistency)
+            if status != "ok" and earliest_lead is not None and adjusted_daily > 0:
+                coverage_days = 2 * earliest_lead + 1
+                target_stock = adjusted_daily * coverage_days
+                forecast_order = round(max(0.0, target_stock - qty_on_hand), 1)
+            else:
+                forecast_order = 0.0
+
+            # Apply MOQ from best vendor (first in sorted list)
+            moq = 0.0
+            moq_applied = False
+            if vendor_details and forecast_order > 0:
+                best_vid = vendor_details[0]["vendor_id"]
+                moq = get_moq_for_vendor_sku(best_vid, sku)
+                if forecast_order < moq:
+                    moq_applied = True
+                    forecast_order = moq
+
+            result_ingredients.append({
+                "sku": sku,
+                "name": ingredient["name"],
+                "category": ingredient["category"],
+                "unit": ingredient["unit"],
+                "quantity_on_hand": qty_on_hand,
+                "avg_daily_consumption": adjusted_daily,
+                "days_of_stock": days_of_stock,
+                "earliest_delivery_days": earliest_lead,
+                "forecast_order": forecast_order,
+                "moq": moq,
+                "moq_applied": moq_applied,
+                "shelf_life_days": ingredient.get("shelf_life_days"),
+                "perishable": ingredient.get("perishable", False),
+                "status": status,
+                "vendors": vendor_details
+            })
+
+        # Sort: critical first, then warning, then ok; within group by days_of_stock asc
+        status_order = {"critical": 0, "warning": 1, "ok": 2}
+        result_ingredients.sort(key=lambda x: (
+            status_order.get(x["status"], 3),
+            x["days_of_stock"] if x["days_of_stock"] is not None else 9999
+        ))
+
+        return {
+            "snapshot_date": current_date,
+            "current_time": current_time,
+            "ingredients": result_ingredients
+        }
+
+    except Exception as e:
+        logger.error(f"Error in inventory_dashboard: {str(e)}", exc_info=True)
+        raise HTTPException(status_code=500, detail="Error loading inventory dashboard")
+
+
+# ============================================================================
+# Menu Dashboard Endpoint
+# ============================================================================
+
+@app.get("/api/menu-dashboard")
+async def menu_dashboard(restaurant_id: str = "R001"):
+    """
+    Returns all dishes with sales data and expandable ingredient breakdown.
+    Includes dishes with 0 sales.
+    """
+    try:
+        config = get_demo_config()
+        current_date = config["current_date"]
+        recipes = get_all_recipes()
+        ingredients = get_all_ingredients()
+        sales_days = get_last_n_days_sales(7, current_date)
+        num_days = len(sales_days) if sales_days else 1
+
+        # Build ingredient name lookup
+        ing_name_map = {ing["sku"]: ing["name"] for ing in ingredients}
+
+        # Aggregate sales per dish across all days
+        dish_sales = {}  # dish_id -> {total_sold, total_revenue}
+        for day in sales_days:
+            for sale in day.get("sales", []):
+                did = sale["dish_id"]
+                if did not in dish_sales:
+                    dish_sales[did] = {"total_sold": 0, "total_revenue": 0}
+                dish_sales[did]["total_sold"] += sale["quantity"]
+                dish_sales[did]["total_revenue"] += sale.get("revenue", sale["quantity"] * 0)
+
+        # Compute period dates
+        if sales_days:
+            period_start = sales_days[0]["date"]
+            period_end = sales_days[-1]["date"]
+        else:
+            period_start = current_date
+            period_end = current_date
+
+        result_dishes = []
+        for recipe in recipes:
+            did = recipe["dish_id"]
+            sales = dish_sales.get(did, {"total_sold": 0, "total_revenue": 0})
+            total_sold = sales["total_sold"]
+            total_revenue = sales["total_revenue"]
+
+            # If revenue is 0 but we have sales, compute from avg_price
+            if total_revenue == 0 and total_sold > 0:
+                total_revenue = total_sold * recipe.get("avg_price", 0)
+
+            # Ingredient breakdown
+            ing_breakdown = []
+            for ing in recipe.get("ingredients", []):
+                ing_breakdown.append({
+                    "sku": ing["sku"],
+                    "name": ing_name_map.get(ing["sku"], ing["sku"]),
+                    "qty_per_serving": ing["quantity"],
+                    "unit": ing["unit"],
+                    "total_consumed": round(total_sold * ing["quantity"], 2)
+                })
+
+            result_dishes.append({
+                "dish_id": did,
+                "dish_name": recipe["dish_name"],
+                "category": recipe.get("category", ""),
+                "avg_price": recipe.get("avg_price", 0),
+                "total_sold": total_sold,
+                "avg_daily_sold": round(total_sold / num_days, 1),
+                "total_revenue": round(total_revenue),
+                "ingredients": ing_breakdown
+            })
+
+        # Sort by total_revenue descending
+        result_dishes.sort(key=lambda x: x["total_revenue"], reverse=True)
+
+        return {
+            "period_days": num_days,
+            "period_start": period_start,
+            "period_end": period_end,
+            "dishes": result_dishes
+        }
+
+    except Exception as e:
+        logger.error(f"Error in menu_dashboard: {str(e)}", exc_info=True)
+        raise HTTPException(status_code=500, detail="Error loading menu dashboard")
+
+
+# ============================================================================
+# Vendors Dashboard Endpoint
+# ============================================================================
+
+@app.get("/api/vendors-dashboard")
+async def vendors_dashboard(restaurant_id: str = "R001"):
+    """
+    Returns all vendors with their profiles and the ingredients they supply,
+    including latest and average prices.
+    """
+    try:
+        vendor_data = _load_vendor_pricing()
+        config = get_demo_config()
+        current_time = config.get("current_time", "12:00")
+        ingredients = get_all_ingredients()
+        ing_name_map = {ing["sku"]: ing["name"] for ing in ingredients}
+        ing_unit_map = {ing["sku"]: ing["unit"] for ing in ingredients}
+
+        result_vendors = []
+        for vendor in vendor_data["vendors"]:
+            vid = vendor["vendor_id"]
+
+            # Collect all SKUs this vendor has ever priced
+            sku_set = set()
+            for snapshot in vendor_data["pricing_history"]:
+                for entry in snapshot["prices"]:
+                    if entry["vendor_id"] == vid:
+                        sku_set.update(entry.get("items", {}).keys())
+
+            # Build ingredient list with prices
+            vendor_ingredients = []
+            for sku in sorted(sku_set):
+                latest = get_latest_price_for_vendor_sku(vid, sku)
+                avg = get_avg_price_for_vendor_sku(vid, sku)
+                vendor_ingredients.append({
+                    "sku": sku,
+                    "name": ing_name_map.get(sku, sku.replace("_", " ").title()),
+                    "unit": ing_unit_map.get(sku, "kg"),
+                    "latest_price": latest,
+                    "avg_price": avg,
+                    "moq": vendor.get("min_order_qty", {}).get(sku, 0)
+                })
+
+            lead_days = compute_effective_lead_days(vendor, current_time)
+
+            result_vendors.append({
+                "vendor_id": vid,
+                "vendor_name": vendor["vendor_name"],
+                "category": vendor["category"],
+                "contact": vendor.get("contact", ""),
+                "whatsapp": vendor.get("whatsapp", ""),
+                "delivery_time": vendor.get("delivery_time", ""),
+                "delivery_days": vendor.get("delivery_days", 1),
+                "effective_lead_days": lead_days,
+                "order_cutoff_time": vendor.get("order_cutoff_time", ""),
+                "cutoff_missed": current_time >= vendor.get("order_cutoff_time", "23:59"),
+                "reliability_score": vendor.get("reliability_score", 0),
+                "quality_score": vendor.get("quality_score", 0),
+                "credit_available": vendor.get("credit_available", False),
+                "credit_days": vendor.get("credit_days", 0),
+                "comm_channel": vendor.get("comm_preferences", {}).get("channel", ""),
+                "comm_language": vendor.get("comm_preferences", {}).get("language", ""),
+                "ingredient_count": len(vendor_ingredients),
+                "ingredients": vendor_ingredients
+            })
+
+        return {
+            "snapshot_time": current_time,
+            "snapshot_date": config["current_date"],
+            "vendor_count": len(result_vendors),
+            "vendors": result_vendors
+        }
+
+    except Exception as e:
+        logger.error(f"Error in vendors_dashboard: {str(e)}", exc_info=True)
+        raise HTTPException(status_code=500, detail="Error loading vendors dashboard")
 
 
 # ============================================================================

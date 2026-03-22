@@ -17,7 +17,7 @@ SCRIPT_DIR = Path(__file__).parent
 DATA_DIR = SCRIPT_DIR.parent / "data"
 
 # Hardcoded rainy days
-RAINY_DAYS = {"2026-02-18", "2026-03-05", "2026-03-12"}
+RAINY_DAYS = {"2026-02-18", "2026-03-05", "2026-03-12", "2026-03-19"}
 
 # Dish popularity weights (must sum to 1.0)
 DISH_WEIGHTS = {
@@ -44,10 +44,10 @@ with open(DATA_DIR / "recipes.json", "r") as f:
 
 
 def generate_pos_data():
-    """Generate 30-day POS data from Feb 17 to Mar 18, 2026."""
+    """Generate POS data from Feb 20 to Mar 21, 2026 (30 days)."""
 
-    start_date = datetime(2026, 2, 17)
-    end_date = datetime(2026, 3, 18)
+    start_date = datetime(2026, 2, 20)
+    end_date = datetime(2026, 3, 21)
 
     pos_records = []
     current_date = start_date

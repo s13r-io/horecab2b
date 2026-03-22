@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NAM Procurement - Dashboard</title>
+    <link rel="stylesheet" href="dashboard.css">
+</head>
+<body>
+    <!-- Header -->
+    <div class="db-header">
+        <div class="db-header-content">
+            <div class="db-header-left">
+                <h1>Spice Junction</h1>
+                <span class="db-header-subtitle">Procurement Dashboard</span>
+            </div>
+            <a href="index.html" class="btn-chat">Open Chat</a>
+        </div>
+    </div>
+
+    <!-- Tab Bar -->
+    <div class="db-tab-bar">
+        <button class="db-tab active" data-tab="inventory">Inventory</button>
+        <button class="db-tab" data-tab="menu">Menu & Dishes</button>
+        <button class="db-tab" data-tab="vendors">Vendors</button>
+    </div>
+
+    <!-- Inventory View -->
+    <div id="inventoryView" class="db-view">
+        <div class="db-section-header">
+            <div>
+                <h2>Current Inventory</h2>
+                <span class="db-date" id="inventoryDate"></span>
+            </div>
+        </div>
+
+        <div id="inventoryContent">
+            <p class="loading-text">Loading inventory...</p>
+        </div>
+
+        <div class="db-footnotes">
+            <div class="db-footnote-section">
+                <h3>Status Indicators</h3>
+                <div class="db-legend">
+                    <span class="legend-item"><span class="dot dot-critical"></span> Critical — stock runs out before delivery can arrive</span>
+                    <span class="legend-item"><span class="dot dot-warning"></span> Warning — stock lasts less than lead time + 1 day (no safety buffer)</span>
+                    <span class="legend-item"><span class="dot dot-ok"></span> OK — comfortable stock level</span>
+                </div>
+            </div>
+            <div class="db-footnote-section">
+                <h3>How Order Quantity is Calculated</h3>
+                <div class="db-formula">
+                    <p><strong>Daily Use</strong> = weighted average of last 7 days consumption (recent days weighted higher), adjusted for weekends and upcoming events</p>
+                    <p><strong>Days of Stock</strong> = current stock on hand / daily use</p>
+                    <p><strong>Lead Time</strong> = days until earliest vendor delivery, based on each vendor's order cutoff time (if cutoff is missed today, delivery shifts by a day)</p>
+                    <p><strong>Order Qty</strong> = (daily use x coverage days) - current stock on hand</p>
+                    <p>Where <strong>coverage days</strong> = lead time + lead time (next cycle) + 1 day safety buffer</p>
+                    <p><strong>MOQ</strong> = if calculated order qty is below a vendor's minimum order quantity, it is rounded up to meet the MOQ</p>
+                    <p class="db-formula-example">Example: Chicken Breast uses 11.5 kg/day, lead time is 1 day. Coverage = 1 + 1 + 1 = 3 days. Target stock = 11.5 x 3 = 34.5 kg. Current stock = 2.0 kg. Order = 34.5 - 2.0 = 32.5 kg.</p>
+                </div>
+            </div>
+            <div class="db-footnote-section">
+                <h3>How Vendor is Selected</h3>
+                <div class="db-formula">
+                    <p><strong>Effective Cost</strong> = total cost x (1 - credit days x 0.1% per day)</p>
+                    <p>Vendors offering longer credit terms get a lower effective cost — reflecting the real value of holding working capital longer</p>
+                    <p><strong>Tiebreaker</strong> = if two vendors have the same effective cost, the more reliable one is preferred</p>
+                </div>
+            </div>
+            <div class="db-footnote-section">
+                <h3>Split Ordering (Urgency)</h3>
+                <div class="db-formula">
+                    <p>When stock won't last until the preferred (cheapest) vendor can deliver, the order is split:</p>
+                    <p><strong>Bridge Order</strong> = small urgent order from the fastest available vendor, just enough to cover the gap until the preferred vendor delivers</p>
+                    <p><strong>Main Order</strong> = total forecast quantity minus the bridge quantity, placed with the preferred vendor at a better price</p>
+                    <p>Bridge qty accounts for stock remaining at the time the bridge delivery arrives</p>
+                    <p class="db-formula-example">Example: Chicken Breast — preferred vendor (Local Meat, Rs.295/kg) missed cutoff, delivers in 2 days. Stock is 2 kg (0.2 days). Hyperpure (Rs.305/kg) cutoff still open, delivers tomorrow. Bridge: 11.5 kg from Hyperpure. Main: 32.4 - 11.5 = 20.9 kg from Local Meat. Saves Rs.209 vs ordering everything from Hyperpure.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Menu View -->
+    <div id="menuView" class="db-view" style="display:none">
+        <div class="db-section-header">
+            <div>
+                <h2>Dishes & Ingredient Breakdown</h2>
+                <span class="db-date" id="menuPeriod"></span>
+            </div>
+        </div>
+
+        <div id="menuContent">
+            <p class="loading-text">Loading menu data...</p>
+        </div>
+    </div>
+
+    <!-- Vendors View -->
+    <div id="vendorsView" class="db-view" style="display:none">
+        <div class="db-section-header">
+            <div>
+                <h2>Vendors & Ingredients</h2>
+                <span class="db-date" id="vendorsDate"></span>
+            </div>
+        </div>
+
+        <div id="vendorsContent">
+            <p class="loading-text">Loading vendor data...</p>
+        </div>
+
+        <div class="db-footnotes">
+            <div class="db-footnote-section">
+                <h3>About Vendor Data</h3>
+                <div class="db-formula">
+                    <p><strong>Latest Price</strong> = price from the most recent pricing snapshot</p>
+                    <p><strong>Avg Price</strong> = average across all historical pricing snapshots</p>
+                    <p><strong>Reliability</strong> = on-time delivery percentage based on past orders</p>
+                    <p><strong>Cutoff Time</strong> = orders placed after this time ship the next business day</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="dashboard.js"></script>
+</body>
+</html>

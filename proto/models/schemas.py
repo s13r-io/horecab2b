@@ -48,6 +48,9 @@ class VendorOption(BaseModel):
     delivery_time: str
     credit_days: int
     is_recommended: bool
+    moq: float = 0.0              # min order qty for this vendor-SKU
+    order_quantity: float = 0.0    # actual qty to order (max of requested, moq)
+    effective_lead_days: int = 0   # cutoff-aware lead time in days
 
 
 class VendorAssignment(BaseModel):
@@ -56,6 +59,7 @@ class VendorAssignment(BaseModel):
     items: List[dict]  # [{sku, ingredient_name, quantity, unit, price_per_unit}, ...]
     estimated_cost: float
     routing_reason: str
+    is_bridge_order: bool = False  # marks urgency bridge orders
 
 
 # ============================================================================

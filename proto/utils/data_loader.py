@@ -190,6 +190,107 @@ def get_all_recipes() -> list:
     return recipe_data.get("recipes", [])
 
 
+def get_all_inventory() -> list:
+    """Get full inventory snapshot."""
+    inv_data = _load_inventory()
+    return inv_data.get("inventory", [])
+
+
+def compute_effective_lead_days(vendor: dict, current_time: str) -> int:
+    """
+    Compute effective lead time in days based on order cutoff time.
+    If current_time is before cutoff -> delivery in delivery_days.
+    If current_time is at or after cutoff -> delivery in delivery_days + 1.
+    """
+    cutoff = vendor.get("order_cutoff_time", "16:00")
+    base_days = vendor.get("delivery_days", 1)
+    if current_time >= cutoff:
+        return base_days + 1
+    return base_days
+
+
+def get_latest_price_for_vendor_sku(vendor_id: str, sku: str) -> float:
+    """Latest price from most recent snapshot for a vendor+SKU pair."""
+    vendor_data = _load_vendor_pricing()
+    for snapshot in reversed(vendor_data["pricing_history"]):
+        for entry in snapshot["prices"]:
+            if entry["vendor_id"] == vendor_id and sku in entry.get("items", {}):
+                return entry["items"][sku]
+    return None
+
+
+def get_avg_price_for_vendor_sku(vendor_id: str, sku: str) -> float:
+    """Average price across all pricing snapshots for a vendor+SKU pair."""
+    vendor_data = _load_vendor_pricing()
+    prices = []
+    for snapshot in vendor_data["pricing_history"]:
+        for entry in snapshot["prices"]:
+            if entry["vendor_id"] == vendor_id and sku in entry.get("items", {}):
+                prices.append(entry["items"][sku])
+    return round(sum(prices) / len(prices), 1) if prices else None
+
+
+def get_moq_for_vendor_sku(vendor_id: str, sku: str) -> float:
+    """Min order qty for a vendor-SKU pair. Returns 0 if none set."""
+    vendor_data = _load_vendor_pricing()
+    for vendor in vendor_data["vendors"]:
+        if vendor["vendor_id"] == vendor_id:
+            return vendor.get("min_order_qty", {}).get(sku, 0.0)
+    return 0.0
+
+
+def get_adjusted_daily_consumption(sku: str, target_date: str) -> float:
+    """
+    Compute adjusted daily consumption for a SKU on target_date.
+    Uses weighted 7-day average of POS data, adjusted for weekend/event multipliers.
+    Same algorithm as forecasting agent and inventory dashboard.
+    Returns 0.0 if no data available.
+    """
+    sales_data = get_last_n_days_sales(7, target_date)
+    if not sales_data:
+        return 0.0
+
+    recipes = get_recipes_using_ingredient(sku)
+    if not recipes:
+        return 0.0
+
+    weights = [1.0, 1.0, 1.0, 1.0, 1.1, 1.2, 1.4]
+    weights_used = weights[-len(sales_data):]
+
+    daily_quantities = []
+    for sales_record in sales_data:
+        daily_qty = 0.0
+        for dish_sale in sales_record.get("sales", []):
+            dish_id = dish_sale["dish_id"]
+            covers = dish_sale["quantity"]
+            recipe = next((r for r in recipes if r["dish_id"] == dish_id), None)
+            if recipe:
+                for ing in recipe.get("ingredients", []):
+                    if ing["sku"] == sku:
+                        daily_qty += ing["quantity"] * covers
+                        break
+        daily_quantities.append(daily_qty)
+
+    weighted_sum = sum(d * w for d, w in zip(daily_quantities, weights_used))
+    denominator = sum(weights_used)
+    base_daily = weighted_sum / denominator if denominator > 0 else 0.0
+
+    # Apply multipliers
+    target_dt = datetime.strptime(target_date, "%Y-%m-%d")
+    weekday = target_dt.weekday()
+    weekend_multiplier = 1.35 if weekday >= 4 else 1.0
+
+    config = get_demo_config()
+    event_multiplier = 1.0
+    for event in config.get("upcoming_events", []):
+        event_date = datetime.strptime(event["date"], "%Y-%m-%d")
+        days_until = (event_date - target_dt).days
+        if 0 <= days_until <= 2:
+            event_multiplier *= event.get("demand_multiplier", event.get("multiplier", 1.0))
+
+    return round(base_daily * weekend_multiplier * event_multiplier, 2)
+
+
 def get_vendor_by_id(vendor_id: str) -> dict:
     """Get vendor profile by ID."""
     vendor_data = _load_vendor_pricing()
