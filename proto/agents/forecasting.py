@@ -104,7 +104,7 @@ def forecast_ingredient(sku: str, target_date: str, num_days: int = 7) -> Ingred
         event_date = datetime.strptime(event["date"], "%Y-%m-%d")
         days_until = (event_date - target_dt).days
         if 0 <= days_until <= 2:
-            event_multiplier *= event["multiplier"]
+            event_multiplier *= event.get("demand_multiplier", 1.0)
 
     # Adjusted daily need with multipliers (no safety stock yet)
     adjusted_daily_need = base_daily_need * weekend_multiplier * event_multiplier

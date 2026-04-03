@@ -1,5 +1,5 @@
 {
-  "snapshot_date": "2026-03-19",
+  "snapshot_date": "2026-04-03",
   "restaurant_id": "R001",
   "inventory": [
     {"sku": "tomato", "quantity_on_hand": 8.0, "unit": "kg"},

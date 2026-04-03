@@ -530,6 +530,136 @@
           }
         }
       ]
+    },
+    {
+      "snapshot_date": "2026-03-29",
+      "week": 7,
+      "note": "Post-Holi stabilization - prices settling",
+      "prices": [
+        {
+          "vendor_id": "V001",
+          "items": {
+            "tomato": 34,
+            "onion": 25,
+            "ginger_garlic": 188,
+            "coriander_leaves": 68,
+            "green_chili": 50
+          }
+        },
+        {
+          "vendor_id": "V002",
+          "items": {
+            "tomato": 38,
+            "onion": 29,
+            "ginger_garlic": 198,
+            "paneer": 425,
+            "butter": 472,
+            "cream": 402,
+            "black_lentils": 126,
+            "red_lentils": 86,
+            "chicken_breast": 298,
+            "yogurt": 65,
+            "rice_basmati": 104,
+            "cooking_oil": 150,
+            "wheat_flour": 43
+          }
+        },
+        {
+          "vendor_id": "V003",
+          "items": {
+            "chicken_breast": 288
+          }
+        },
+        {
+          "vendor_id": "V004",
+          "items": {
+            "paneer": 415,
+            "butter": 462,
+            "cream": 392,
+            "yogurt": 62
+          }
+        },
+        {
+          "vendor_id": "V005",
+          "items": {
+            "wheat_flour": 39,
+            "rice_basmati": 97,
+            "cooking_oil": 145,
+            "salt": 19,
+            "cumin_powder": 345,
+            "turmeric_powder": 194,
+            "red_chili_powder": 298,
+            "garam_masala": 448,
+            "black_lentils": 118,
+            "red_lentils": 79
+          }
+        }
+      ]
+    },
+    {
+      "snapshot_date": "2026-04-05",
+      "week": 8,
+      "note": "Good Friday / Easter week - moderate demand bump on chicken and dairy",
+      "prices": [
+        {
+          "vendor_id": "V001",
+          "items": {
+            "tomato": 36,
+            "onion": 26,
+            "ginger_garlic": 192,
+            "coriander_leaves": 72,
+            "green_chili": 53
+          }
+        },
+        {
+          "vendor_id": "V002",
+          "items": {
+            "tomato": 40,
+            "onion": 30,
+            "ginger_garlic": 204,
+            "paneer": 445,
+            "butter": 495,
+            "cream": 425,
+            "black_lentils": 128,
+            "red_lentils": 88,
+            "chicken_breast": 320,
+            "yogurt": 70,
+            "rice_basmati": 106,
+            "cooking_oil": 152,
+            "wheat_flour": 44
+          }
+        },
+        {
+          "vendor_id": "V003",
+          "items": {
+            "chicken_breast": 308
+          }
+        },
+        {
+          "vendor_id": "V004",
+          "items": {
+            "paneer": 435,
+            "butter": 485,
+            "cream": 415,
+            "yogurt": 68
+          }
+        },
+        {
+          "vendor_id": "V005",
+          "items": {
+            "wheat_flour": 40,
+            "rice_basmati": 99,
+            "cooking_oil": 147,
+            "salt": 20,
+            "cumin_powder": 348,
+            "turmeric_powder": 196,
+            "red_chili_powder": 302,
+            "garam_masala": 452,
+            "black_lentils": 120,
+            "red_lentils": 80
+          }
+        }
+      ]
     }
   ]
 }

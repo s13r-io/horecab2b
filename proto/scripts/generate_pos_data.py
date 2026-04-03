@@ -17,7 +17,7 @@ SCRIPT_DIR = Path(__file__).parent
 DATA_DIR = SCRIPT_DIR.parent / "data"
 
 # Hardcoded rainy days
-RAINY_DAYS = {"2026-02-18", "2026-03-05", "2026-03-12", "2026-03-19"}
+RAINY_DAYS = {"2026-02-18", "2026-03-05", "2026-03-12", "2026-03-19", "2026-03-26"}
 
 # Dish popularity weights (must sum to 1.0)
 DISH_WEIGHTS = {
@@ -44,10 +44,10 @@ with open(DATA_DIR / "recipes.json", "r") as f:
 
 
 def generate_pos_data():
-    """Generate POS data from Feb 20 to Mar 21, 2026 (30 days)."""
+    """Generate POS data from Feb 20 to Apr 2, 2026 (42 days)."""
 
     start_date = datetime(2026, 2, 20)
-    end_date = datetime(2026, 3, 21)
+    end_date = datetime(2026, 4, 2)
 
     pos_records = []
     current_date = start_date
@@ -64,6 +64,12 @@ def generate_pos_data():
         if date_str == "2026-03-15":
             is_event = True
             event_name = "Holi"
+        elif date_str == "2026-03-30":
+            is_event = True
+            event_name = "Ugadi"
+        elif date_str == "2026-04-03":
+            is_event = True
+            event_name = "Good Friday"
 
         # Calculate covers
         base_covers = random.randint(80, 95)
@@ -73,9 +79,13 @@ def generate_pos_data():
         if current_date.weekday() >= 5:
             covers = int(covers * 1.35)
 
-        # Holi multiplier
-        if is_event:
+        # Event multipliers
+        if event_name == "Holi":
             covers = int(covers * 1.6)
+        elif event_name == "Ugadi":
+            covers = int(covers * 1.3)
+        elif event_name == "Good Friday":
+            covers = int(covers * 1.25)
 
         # Generate sales for each dish
         sales = []
