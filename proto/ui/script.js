@@ -238,10 +238,8 @@ function addConfirmCancelButtons(orderId) {
     const confirmBtn = document.createElement('button');
     confirmBtn.className = 'btn-action btn-confirm';
     confirmBtn.textContent = 'Confirm Order';
-    confirmBtn.onclick = () => {
-        messageInput.value = `confirm order ${orderId}`;
-        sendMessage();
-    };
+    confirmBtn.dataset.orderId = orderId;
+    confirmBtn.onclick = () => approveOrder(orderId);
 
     const cancelBtn = document.createElement('button');
     cancelBtn.className = 'btn-action btn-cancel';
