@@ -857,6 +857,47 @@ def handle_approval(order_id: str, restaurant_id: str) -> ApproveResponse:
         )
 
 
+def create_forecast_order(restaurant_id: str) -> dict:
+    """
+    Create an order from today's forecast without going through LLM intent parsing.
+    Returns a dict with order_id, total_cost, response_text, action, and error (if any).
+    """
+    config = get_demo_config()
+    target_date = config["current_date"]
+
+    forecasts = forecast_all_ingredients(target_date)
+    if not forecasts:
+        return {"action": "query", "response_text": "No items need ordering based on today's forecast.", "order_id": None, "total_cost": 0}
+
+    assignments = route_order(forecasts, target_date)
+    total_cost = sum(a.estimated_cost for a in assignments)
+    current_time = config.get("current_time", "15:30")
+    send_schedule = _compute_send_schedule(assignments, current_time, target_date)
+    order_id = generate_order_id()
+    earliest_send_time = min([s["send_time"] for s in send_schedule.values()]) if send_schedule else None
+    all_items = [{"sku": f.sku, "ingredient_name": f.ingredient_name,
+                  "quantity": f.forecast_quantity, "unit": f.unit} for f in forecasts]
+    try:
+        conn = sqlite3.connect("db/prototype.db")
+        cursor = conn.cursor()
+        cursor.execute(
+            """INSERT INTO orders (order_id, restaurant_id, items, total_cost, status,
+               vendors_assigned, scheduled_send_time) VALUES (?, ?, ?, ?, ?, ?, ?)""",
+            (order_id, restaurant_id, json.dumps(all_items), total_cost, "suggested",
+             json.dumps([{"vendor_id": a.vendor_id, "vendor_name": a.vendor_name,
+                          "items": a.items, "estimated_cost": a.estimated_cost,
+                          "is_bridge_order": a.is_bridge_order} for a in assignments]),
+             earliest_send_time))
+        conn.commit()
+        conn.close()
+    except Exception as e:
+        audit_log("AG-ORCH", "create_order_error", error=str(e), order_id=order_id)
+        return {"action": "error", "response_text": "Failed to save order.", "order_id": None, "total_cost": 0, "error": str(e)}
+
+    response_text = _build_order_confirmation_text(order_id, forecasts, assignments, send_schedule, total_cost)
+    return {"action": "order_confirmation", "response_text": response_text, "order_id": order_id, "total_cost": total_cost}
+
+
 def _handle_place_order(intent, restaurant_id: str) -> ChatResponse:
     """
     Handle place_order intent with multi-turn conversational checks.
@@ -876,40 +917,13 @@ def _handle_place_order(intent, restaurant_id: str) -> ChatResponse:
     try:
         # --- Forecast context (multi-item) — keep original behavior, no per-item checks ---
         if intent.context == "forecast" or (not intent.ingredient and not intent.items):
-            forecasts = forecast_all_ingredients(target_date)
-            if not forecasts:
-                return ChatResponse(
-                    response_text="No items need ordering based on today's forecast.",
-                    action="query"
-                )
-            assignments = route_order(forecasts, target_date)
-            total_cost = sum(a.estimated_cost for a in assignments)
-            current_time = config.get("current_time", "15:30")
-            send_schedule = _compute_send_schedule(assignments, current_time, target_date)
-            order_id = generate_order_id()
-            earliest_send_time = min([s["send_time"] for s in send_schedule.values()]) if send_schedule else None
-            all_items = [{"sku": f.sku, "ingredient_name": f.ingredient_name,
-                          "quantity": f.forecast_quantity, "unit": f.unit} for f in forecasts]
-            try:
-                conn = sqlite3.connect("db/prototype.db")
-                cursor = conn.cursor()
-                cursor.execute(
-                    """INSERT INTO orders (order_id, restaurant_id, items, total_cost, status,
-                       vendors_assigned, scheduled_send_time) VALUES (?, ?, ?, ?, ?, ?, ?)""",
-                    (order_id, restaurant_id, json.dumps(all_items), total_cost, "suggested",
-                     json.dumps([{"vendor_id": a.vendor_id, "vendor_name": a.vendor_name,
-                                  "items": a.items, "estimated_cost": a.estimated_cost,
-                                  "is_bridge_order": a.is_bridge_order} for a in assignments]),
-                     earliest_send_time))
-                conn.commit()
-                conn.close()
-            except Exception as e:
-                audit_log("AG-ORCH", "create_order_error", error=str(e), order_id=order_id)
-            response_text = _build_order_confirmation_text(order_id, forecasts, assignments, send_schedule, total_cost)
+            result = create_forecast_order(restaurant_id)
+            if result["action"] != "order_confirmation":
+                return ChatResponse(response_text=result["response_text"], action=result["action"])
             return ChatResponse(
-                response_text=response_text,
+                response_text=result["response_text"],
                 action="order_confirmation",
-                data={"order_id": order_id, "total_cost": total_cost}
+                data={"order_id": result["order_id"], "total_cost": result["total_cost"]}
             )
 
         # --- Single ingredient context ---

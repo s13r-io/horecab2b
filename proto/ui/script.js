@@ -215,13 +215,48 @@ function addPlaceOrderButton() {
     const btn = document.createElement('button');
     btn.className = 'btn-action btn-confirm';
     btn.textContent = 'Place Order';
-    btn.onclick = () => {
-        messageInput.value = 'place order for today\'s forecast';
-        sendMessage();
-    };
+    btn.onclick = () => placeOrderFromForecast(btn);
 
     actionDiv.appendChild(btn);
     lastBubble.appendChild(actionDiv);
+}
+
+
+/**
+ * Place an order directly from today's forecast without going through LLM
+ */
+async function placeOrderFromForecast(btn) {
+    btn.disabled = true;
+    btn.textContent = 'Placing Order...';
+
+    try {
+        const response = await fetch(`${API_BASE}/place-forecast-order?restaurant_id=${RESTAURANT_ID}`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' }
+        });
+
+        if (!response.ok) {
+            const error = await response.json();
+            addBubble('assistant', `Error: ${error.detail || 'Could not place order'}`);
+            btn.disabled = false;
+            btn.textContent = 'Place Order';
+            return;
+        }
+
+        const data = await response.json();
+
+        if (data.action === 'order_confirmation') {
+            addBubble('assistant', data.response_text);
+            addConfirmCancelButtons(data.order_id);
+        } else {
+            addBubble('assistant', data.response_text || 'No items need ordering based on today\'s forecast.');
+        }
+
+    } catch (error) {
+        addBubble('assistant', `Error: ${error.message}`);
+        btn.disabled = false;
+        btn.textContent = 'Place Order';
+    }
 }
 
 

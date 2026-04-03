@@ -21,7 +21,7 @@ from models.schemas import (
     ApproveRequest, ApproveResponse,
     VendorPriceResponse
 )
-from agents.orchestrator import handle_message, handle_approval
+from agents.orchestrator import handle_message, handle_approval, create_forecast_order
 from scheduler import start_scheduler, stop_scheduler
 import sqlite3
 from agents.routing import route_ingredient
@@ -189,6 +189,43 @@ async def approve_order(request: ApproveRequest):
             error=str(e)
         )
         raise HTTPException(status_code=500, detail="Error confirming order")
+
+
+# ============================================================================
+# Place Forecast Order Endpoint
+# ============================================================================
+
+@app.post("/place-forecast-order")
+async def place_forecast_order(restaurant_id: str = "R001"):
+    """
+    Create a suggested order directly from today's forecast, bypassing LLM intent parsing.
+
+    Request: restaurant_id (query param, default R001)
+    Response: order_id, total_cost, response_text, action
+    """
+    try:
+        logger.info(f"Place forecast order request from {restaurant_id}")
+        result = create_forecast_order(restaurant_id)
+
+        audit_log(
+            agent_name="API",
+            action="place_forecast_order",
+            restaurant_id=restaurant_id,
+            order_id=result.get("order_id"),
+            data={"action": result["action"]},
+            duration_ms=0
+        )
+
+        if result["action"] == "error":
+            raise HTTPException(status_code=500, detail=result.get("error", "Failed to create order"))
+
+        return result
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error in place_forecast_order: {str(e)}", exc_info=True)
+        raise HTTPException(status_code=500, detail="Error creating forecast order")
 
 
 # ============================================================================
